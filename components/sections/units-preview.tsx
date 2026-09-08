@@ -1,4 +1,6 @@
-﻿import Link from "next/link";
+﻿"use client"
+
+import Link from "next/link";
 import { fellowshipContent } from "@/data/content";
 import { UnitCard } from "@/components/units/unit-card";
 import { ArrowRight, Users } from "lucide-react";

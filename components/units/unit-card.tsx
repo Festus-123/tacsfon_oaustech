@@ -1,4 +1,6 @@
-﻿import Image from "next/image";
+﻿"use client"
+
+import Image from "next/image";
 import { UnitItem } from "@/data/content";
 import {
   BookOpen,

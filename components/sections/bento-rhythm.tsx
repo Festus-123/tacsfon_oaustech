@@ -35,7 +35,7 @@ export function BentoRhythm() {
                   Primary Gathering
                 </span>
                 <span className="text-xs font-medium text-forest-200">
-                  Every Lord's Day
+                  Every Lord&apos;s Day
                 </span>
               </div>
 
@@ -44,7 +44,7 @@ export function BentoRhythm() {
                   Sunday Divine Worship Service
                 </h3>
                 <p className="mt-2 text-sm text-forest-100/85 leading-relaxed max-w-xl">
-                  Gather with the student body for spirit-filled praise, heartfelt prayer, choral ministration, and practical teaching from God's Word.
+                  Gather with the student body for spirit-filled praise, heartfelt prayer, choral ministration, and practical teaching from God&apos;s Word.
                 </p>
               </div>
             </div>

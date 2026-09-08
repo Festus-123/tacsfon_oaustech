@@ -1,4 +1,6 @@
-﻿import Link from "next/link";
+﻿"use clinet"
+
+import Link from "next/link";
 import Image from "next/image";
 import { fellowshipContent } from "@/data/content";
 import { socialLinks } from "@/data/social";
@@ -12,10 +14,8 @@ import {
   Clock,
   Heart,
   Lock,
-  Instagram,
-  Facebook,
-  Twitter,
 } from "lucide-react";
+import { SiX, SiFacebook, SiInstagram } from "react-icons/si"
 
 export function Footer() {
   return (
@@ -38,14 +38,14 @@ export function Footer() {
                 Current Yearly Theme
               </p>
               <p className="font-serif text-lg font-bold text-white tracking-wide">
-                "{fellowshipContent.identity.yearlyTheme}"
+                &quot;{fellowshipContent.identity.yearlyTheme}&quot;
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <span className="text-xs text-forest-200/80 italic font-serif">
-              "{fellowshipContent.identity.motto}" — {fellowshipContent.identity.mottoScripture}
+              &quot;{fellowshipContent.identity.motto}&quot; — {fellowshipContent.identity.mottoScripture}
             </span>
             <DonationModal
               trigger={
@@ -134,9 +134,9 @@ export function Footer() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-forest-900/90 hover:bg-forest-800 border border-forest-700/50 text-xs text-forest-100 hover:text-gold-300 transition-all"
                   >
-                    {s.icon === "instagram" && <Instagram className="h-3.5 w-3.5 text-pink-400" />}
-                    {s.icon === "facebook" && <Facebook className="h-3.5 w-3.5 text-blue-400" />}
-                    {s.icon === "x" && <Twitter className="h-3.5 w-3.5 text-cyan-400" />}
+                    {s.icon === "instagram" && <SiInstagram className="h-3.5 w-3.5 text-pink-400" />}
+                    {s.icon === "facebook" && <SiFacebook className="h-3.5 w-3.5 text-blue-400" />}
+                    {s.icon === "x" && <SiX className="h-3.5 w-3.5 text-cyan-400" />}
                     {s.icon === "tiktok" && (
                       <span className="font-bold text-xs text-emerald-400">TT</span>
                     )}

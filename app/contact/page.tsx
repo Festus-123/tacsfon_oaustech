@@ -10,10 +10,10 @@ import {
   Clock,
   Heart,
   MessageSquare,
-  Instagram,
-  Facebook,
-  Twitter,
 } from "lucide-react";
+
+import { SiX, SiFacebook, SiInstagram } from "react-icons/si"
+
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -136,9 +136,9 @@ export default function ContactPage() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 p-2.5 rounded-lg border border-forest-100 hover:bg-forest-50 hover:border-forest-200 text-xs text-forest-900 transition-all font-medium"
                   >
-                    {s.icon === "instagram" && <Instagram className="h-4 w-4 text-pink-500" />}
-                    {s.icon === "facebook" && <Facebook className="h-4 w-4 text-blue-600" />}
-                    {s.icon === "x" && <Twitter className="h-4 w-4 text-slate-800" />}
+                    {s.icon === "instagram" && <SiInstagram className="h-4 w-4 text-pink-500" />}
+                    {s.icon === "facebook" && <SiFacebook className="h-4 w-4 text-blue-600" />}
+                    {s.icon === "x" && <SiX className="h-4 w-4 text-slate-800" />}
                     {s.icon === "tiktok" && (
                       <span className="font-bold text-xs text-emerald-600">TT</span>
                     )}

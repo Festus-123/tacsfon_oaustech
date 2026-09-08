@@ -32,7 +32,7 @@ export const fellowshipContent = {
     chapter: "OAUSTECH Chapter, Okitipupa",
     university: "Olusegun Agagu University of Science and Technology",
     yearlyTheme: "The Davidic Generation",
-    yearlyThemeSub: "A generation after God's own heart—walking in devotion, worship, courage, and obedience.",
+    yearlyThemeSub: "A generation after God's own heart walking in devotion, worship, courage, and obedience.",
     motto: "Let no man despise thy youth",
     mottoScripture: "1 Timothy 4:12",
     parentChurchMotto: "One Fold, One Shepherd",
@@ -94,7 +94,7 @@ export const fellowshipContent = {
     {
       day: "Monthly",
       title: "All-Night Vigil",
-      time: "10:00 PM – Dawn (One Friday a Month)",
+      time: "10:00 PM Dawn (One Friday a Month)",
       venue: "TACSFON Worship Center",
       description:
         "Extended night of fervent prayer, prophetic ministration, worship, and spiritual renewal. Held once every month.",

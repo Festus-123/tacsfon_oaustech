@@ -42,7 +42,7 @@ export const initialEvents: FellowshipEvent[] = [
   },
   {
     id: "evt-tuesday-bible-study",
-    title: "Rooted in the Word — Tuesday Bible Study",
+    title: "Rooted in the Word Tuesday Bible Study",
     description:
       "A foundational study session breaking down biblical truths, verse by verse. Open for questions, practical student applications, and spiritual discipleship.",
     event_date: "2026-09-15",
