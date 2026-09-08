@@ -1,0 +1,1241 @@
+============================================================
+TACSFON (OAUSTECH) — CONTENT SPECIFICATION
+============================================================
+Tacsfon_oaustech123
+1. ORGANIZATION IDENTITY
+============================================================
+
+OFFICIAL NAME:
+TACSFON (OAUSTECH)
+
+FULL NAME:
+The Apostolic Church Student Fellowship of Nigeria
+
+LOCATION:
+OAUSTECH, Okitipupa, Ondo State, Nigeria
+
+ABOUT THE FELLOWSHIP:
+
+TACSFON (OAUSTECH) is a Christian student fellowship within the
+Olusegun Agagu University of Science and Technology (OAUSTECH),
+Okitipupa, Ondo State, Nigeria.
+
+The fellowship is a student-led expression of The Apostolic Church
+(TAC) within the university environment. It is made up of students
+who worship and serve within The Apostolic Church, although
+membership in the fellowship is not restricted only to students who
+are members of TAC from home.
+
+TACSFON exists to provide a spiritual community where students can
+grow in their relationship with Jesus Christ, fellowship with other
+believers, study the Word of God, pray, worship, evangelize, and
+serve God while navigating university life.
+
+The fellowship is governed and operated by students of OAUSTECH,
+with its activities and organization shaped around the needs and
+spiritual growth of students.
+
+IDENTITY / POSITIONING:
+
+TACSFON should not be presented as being in competition with other
+Christian student fellowships or churches.
+
+Other Christian fellowships such as RCCG, Winners, and others should
+be treated respectfully. The website should communicate that
+different Christian fellowships may have different structures,
+denominations, and expressions of faith, while sharing the common
+purpose of serving Christ.
+
+TACSFON's distinctive identity comes from its connection to
+The Apostolic Church and its expression as a student fellowship
+within OAUSTECH.
+
+CORE MESSAGE:
+
+TACSFON is a place where students can encounter Christ, grow in
+faith, build meaningful Christian fellowship, and serve God within
+their university community.
+
+The tone should communicate:
+
+- faith
+- warmth
+- fellowship
+- service
+- spiritual growth
+- community
+- purpose
+- student life
+- devotion to Christ
+
+Do not make the organization sound unnecessarily corporate.
+
+Do not make the copy sound like an advertisement.
+
+The writing should feel like a genuine Christian fellowship speaking
+to students, visitors, prospective members, and members of the
+broader TAC community.
+
+============================================================
+2. THE DAVIDIC GENERATION
+============================================================
+
+CURRENT MOTTO / YEARLY THEME:
+
+THE DAVIDIC GENERATION
+
+BACKGROUND:
+
+"The Davidic Generation" is the current yearly motto/theme given to
+TACSFON through prophecy by the Holy Spirit.
+
+The website should present this as the fellowship's current theme
+rather than treating it as a permanent organizational slogan.
+
+The theme should be visually prominent but should remain changeable
+for future years.
+
+COPY DIRECTION:
+
+The Davidic Generation can be presented around ideas associated with
+the biblical Davidic character and calling, including:
+
+- devotion to God
+- courage
+- worship
+- spiritual conviction
+- obedience
+- leadership
+- purpose
+- service
+- standing for God
+- wholehearted faith
+
+However, do not invent a specific prophetic message beyond what has
+been provided.
+
+The website should not claim specific details about the prophecy
+that have not been supplied.
+
+The theme can be creatively introduced through scripture-inspired
+language and biblical imagery while remaining faithful to the
+information provided.
+
+============================================================
+3. ORGANIZATIONAL PURPOSE
+============================================================
+
+TACSFON exists within the university environment to help students:
+
+- grow spiritually
+- know and follow Christ
+- study and understand Scripture
+- cultivate a life of prayer
+- worship God
+- evangelize
+- serve
+- build Christian relationships
+- encourage one another
+- live out their faith within university life
+
+The website should communicate that TACSFON is not merely a weekly
+meeting or event organization.
+
+It is a community of students pursuing Christ together.
+
+============================================================
+4. FELLOWSHIP EXPERIENCE
+============================================================
+
+The fellowship should be portrayed as a community where students can:
+
+- worship together
+- learn together
+- pray together
+- serve together
+- grow together
+- reach others with the gospel
+- build meaningful relationships
+
+The language should balance spiritual depth with the reality that
+members are university students.
+
+Avoid making the copy sound excessively formal.
+
+============================================================
+5. CHRISTIAN FOUNDATION
+============================================================
+
+TACSFON is a Christian fellowship.
+
+Website copy may naturally draw from familiar Christian concepts
+such as:
+
+- faith
+- grace
+- salvation
+- prayer
+- worship
+- Scripture
+- discipleship
+- evangelism
+- fellowship
+- service
+- love
+- holiness
+- spiritual growth
+
+The website should remain Christ-centered.
+
+Scripture may be used throughout the website where appropriate.
+
+Do not overload the website with Bible verses.
+
+============================================================
+6. VOICE AND WRITING STYLE
+============================================================
+
+The website's writing should be:
+
+WARM
+Clear and welcoming to students and visitors.
+
+CHRIST-CENTERED
+Faith should be visible in the language without becoming repetitive.
+
+YOUTHFUL
+The audience is primarily university students.
+
+AUTHENTIC
+Avoid exaggerated marketing language.
+
+ELEGANT
+Use concise, thoughtful wording.
+
+INVITING
+A visitor who knows nothing about TACSFON should feel comfortable
+exploring the website.
+
+PURPOSEFUL
+Every section should communicate something meaningful.
+
+Avoid excessive religious clichés.
+
+Avoid repeatedly using phrases such as:
+
+"Experience an unforgettable..."
+"Join our amazing..."
+"We are a vibrant..."
+"Where faith meets excellence..."
+
+unless they genuinely fit the context.
+
+Prefer language that sounds natural and sincere.
+
+============================================================
+7. WEBSITE PURPOSE
+============================================================
+
+The website primarily exists to INFORM and CONNECT.
+
+Visitors should be able to quickly understand:
+
+- What is TACSFON?
+- Where is TACSFON?
+- What does TACSFON do?
+- What programs does TACSFON organize?
+- What units exist within the fellowship?
+- Who leads/organizes the fellowship?
+- What events are coming up?
+- How can I connect?
+- How can I reach the fellowship?
+- How can I support the work?
+- Where can I find TACSFON online?
+
+The website should not feel like an online replacement for the
+physical fellowship.
+
+It should function as the fellowship's digital home and information
+point.
+
+============================================================
+8. CONTENT CREATIVE DIRECTION
+============================================================
+
+When exact copy is not supplied, create concise original copy based
+on the facts in this document.
+
+Do not invent:
+
+- history
+- membership numbers
+- achievements
+- testimonials
+- leadership names
+- dates
+- locations
+- church branches
+- programs
+- partnerships
+- awards
+- statistics
+
+If information is missing, structure the UI so that the information
+can be added later.
+
+============================================================
+END OF CURRENT CONTENT SPECIFICATION
+============================================================
+
+============================================================
+9. FELLOWSHIP ACTIVITIES & PROGRAMS
+============================================================
+
+TACSFON's activities are centered around worship, the study of God's
+Word, prayer, spiritual growth, evangelism, fellowship, and service.
+
+The website should distinguish between regular weekly activities,
+periodic activities, and major annual programs.
+
+============================================================
+9.1 REGULAR WEEKLY ACTIVITIES
+============================================================
+
+SUNDAY SERVICE
+
+TACSFON gathers for Sunday worship and fellowship.
+
+This is one of the primary gatherings of the fellowship and should
+be presented as a time for students to worship God, hear His Word,
+pray, and fellowship with one another.
+
+TUESDAY — BIBLE STUDY
+
+Bible Study holds on Tuesdays.
+
+The Bible Study is focused on studying and understanding Scripture,
+growing in biblical knowledge, and applying God's Word to everyday
+Christian life.
+
+The presentation should communicate that Bible Study is an
+opportunity to ask questions, learn, reflect, and grow together.
+
+FRIDAY — PRAYER MEETING
+
+Prayer Meeting holds on Fridays.
+
+Prayer is an important part of the fellowship's life.
+
+The prayer gathering should be presented as a time for students to
+seek God together, intercede, give thanks, and grow in their personal
+and collective prayer lives.
+
+SATURDAY — CHOIR PRACTICE
+
+Choir Practice holds on Saturdays.
+
+The Choir/Choir Unit prepares through practice and musical
+rehearsals for worship and fellowship activities.
+
+The website should present this as part of the fellowship's service
+and worship structure rather than simply as a music club.
+
+============================================================
+9.2 MONTHLY / PERIODIC ACTIVITIES
+============================================================
+
+VIGIL
+
+A vigil is held once a month, on a Friday.
+
+The vigil should be presented as a dedicated time of extended
+prayer, worship, reflection, and seeking God.
+
+The exact date of each vigil may vary.
+
+Therefore, do not hardcode a recurring calendar date.
+
+When a specific vigil is scheduled, it may be displayed through the
+dynamic Events system.
+
+============================================================
+9.3 EVANGELISM
+============================================================
+
+TACSFON engages in evangelism periodically.
+
+These activities are focused on sharing the gospel and reaching
+people with the message of Christ.
+
+Evangelism should be presented as an active expression of the
+fellowship's Christian faith and commitment to sharing Christ beyond
+the fellowship community.
+
+Evangelism activities may occur at different times and should
+therefore be represented as events/programs whenever a specific
+activity is scheduled.
+
+============================================================
+9.4 ANNUAL PROGRAMS
+============================================================
+
+Some TACSFON activities occur annually rather than weekly or
+monthly.
+
+One major example is:
+
+TACSFON WEEK / ANNIVERSARY
+
+TACSFON Week is an annual period of special programs celebrating and
+reflecting on the fellowship.
+
+It may contain multiple activities and programs across several days.
+
+Because the exact structure may change from year to year, the website
+should not hardcode a fixed list of activities for TACSFON Week.
+
+Instead, individual programs can be represented as dynamic events
+when the relevant information is available.
+
+The annual program may include special worship gatherings, teachings,
+outreach, celebrations, or other fellowship activities depending on
+the year's schedule.
+
+Do not invent specific TACSFON Week activities unless they are
+provided.
+
+============================================================
+10. JCCF
+============================================================
+
+TACSFON (OAUSTECH) is part of the Joint Campus Christian Fellowship
+(JCCF).
+
+The website should acknowledge this relationship as part of TACSFON's
+identity within the wider Christian student community.
+
+JCCF should be presented respectfully and naturally.
+
+Do not imply that TACSFON is the only Christian fellowship within the
+campus.
+
+Do not create unsupported claims about JCCF's organizational
+structure, leadership, history, membership, or activities.
+
+If additional official JCCF information is provided later, it can be
+incorporated into the website.
+
+============================================================
+11. ACTIVITY PRESENTATION
+============================================================
+
+The website should NOT present every activity as a giant card.
+
+Use hierarchy.
+
+For example:
+
+REGULAR RHYTHM
+
+Sunday
+Worship & Fellowship
+
+Tuesday
+Bible Study
+
+Friday
+Prayer Meeting
+
+Saturday
+Choir Practice
+
+Then separately:
+
+PERIODIC
+
+Monthly Vigil
+Periodic Evangelism
+
+Then:
+
+ANNUAL
+
+TACSFON Week / Anniversary
+
+This information can be expressed through a Bento layout where
+appropriate.
+
+The design should make the fellowship's weekly rhythm immediately
+understandable.
+
+============================================================
+12. EVENT SYSTEM RELATIONSHIP
+============================================================
+
+Not every activity should become an event in the database.
+
+Regular recurring activities such as:
+
+- Sunday Service
+- Tuesday Bible Study
+- Friday Prayer Meeting
+- Saturday Choir Practice
+
+may be represented as static information.
+
+Specific scheduled occurrences such as:
+
+- special Bible Study
+- monthly vigil
+- evangelism
+- TACSFON Week programs
+- anniversary programs
+- seminars
+- special services
+- other one-time programs
+
+can be created as dynamic events by administrators.
+
+This distinction should keep the database clean while allowing the
+website to communicate the fellowship's regular rhythm.
+
+============================================================
+END OF ACTIVITIES SECTION
+============================================================
+
+==================================================
+UNITS
+==================================================
+
+SECTION PURPOSE:
+TACSFON (OAUSTECH) operates through different units that help coordinate the
+spiritual, academic, administrative, creative, and fellowship activities of
+the organization.
+
+Each unit has a coordinator/head who helps lead and coordinate the activities
+of the unit.
+
+The Units section should communicate that every unit is an area of service
+within one fellowship. The presentation should feel collaborative and
+community-oriented, not like a corporate departmental structure.
+
+
+UNIT: BIBLE STUDY UNIT
+--------------------------------------------------
+
+PURPOSE:
+Responsible for coordinating and facilitating the fellowship's Bible study
+activities.
+
+RESPONSIBILITIES:
+- Coordinates the Tuesday Bible Study.
+- Members of the unit take turns anchoring/facilitating Bible study sessions.
+- Helps prepare and organize Bible study sessions.
+- Encourages members to study and understand God's Word.
+
+REGULAR ACTIVITY:
+- Tuesday Bible Study
+
+
+UNIT: PRAYER UNIT
+--------------------------------------------------
+
+PURPOSE:
+Responsible for coordinating the fellowship's prayer activities.
+
+RESPONSIBILITIES:
+- Coordinates the Friday Prayer Meeting.
+- Members of the unit take turns anchoring/facilitating prayer meetings.
+- Helps organize prayer-focused activities and gatherings.
+- Supports the fellowship's culture of prayer.
+
+REGULAR ACTIVITY:
+- Friday Prayer Meeting
+
+
+UNIT: DRAMA UNIT
+--------------------------------------------------
+
+PURPOSE:
+Responsible for coordinating drama presentations within the fellowship.
+
+RESPONSIBILITIES:
+- Coordinates drama presentations during fellowship programmes and events.
+- Organizes and prepares members involved in drama plays.
+- Works with other units when drama presentations are required.
+- Coordinates drama activities for special programmes and events.
+
+
+UNIT: CHOIR UNIT
+--------------------------------------------------
+
+PURPOSE:
+Responsible for the fellowship's choir, musical ministrations, and choir
+representation.
+
+RESPONSIBILITIES:
+- Coordinates choir ministrations during fellowship services.
+- Represents TACSFON during appropriate outdoor choir ministrations.
+- Conducts regular choir practice.
+- Prepares members for musical ministrations and special programmes.
+
+REGULAR ACTIVITY:
+- Saturday Choir Practice
+
+
+UNIT: ORGANIZING UNIT
+--------------------------------------------------
+
+PURPOSE:
+Responsible for helping coordinate the practical and logistical arrangements
+required for fellowship activities and events.
+
+RESPONSIBILITIES:
+- Organizes and packs instruments and other equipment.
+- Coordinates transportation for fellowship members attending events.
+- Helps organize logistics for programmes and activities.
+- Works with other units to ensure events and programmes run smoothly.
+- Handles practical arrangements required before, during, and after events.
+
+
+UNIT: ACADEMIC UNIT
+--------------------------------------------------
+
+PURPOSE:
+Supports members in their academic pursuits alongside their spiritual and
+fellowship life.
+
+RESPONSIBILITIES:
+- Organizes tutorials and academic assistance.
+- Coordinates academic-focused programmes.
+- Supports academic Sunday activities.
+- Creates opportunities for members to assist and learn from one another
+  academically.
+
+NOTE:
+The unit should be presented as part of the fellowship's student-focused
+community and its desire to support members throughout their university
+journey.
+
+
+UNIT: USHERING UNIT
+--------------------------------------------------
+
+PURPOSE:
+Helps maintain order, hospitality, and smooth coordination during fellowship
+services and programmes.
+
+RESPONSIBILITIES:
+- Ushers members during fellowship services.
+- Supports the orderly flow of weekly fellowship services.
+- Assists with seating, movement, and general service coordination where
+  necessary.
+- Supports ushering responsibilities during special programmes and events.
+
+NOTE:
+Membership/participation in the Ushering Unit is not compulsory for every
+fellowship member.
+
+
+UNIT: EVANGELISM UNIT
+--------------------------------------------------
+
+PURPOSE:
+Responsible for coordinating evangelism and outreach activities.
+
+RESPONSIBILITIES:
+- Anchors evangelism activities.
+- Coordinates outreach and reach-out programmes.
+- Encourages members to participate in sharing the Gospel.
+- Supports periodic evangelism activities organized by the fellowship.
+
+
+UNIT: BROTHERS UNIT
+--------------------------------------------------
+
+PURPOSE:
+The Brothers Unit brings together the brothers within the fellowship for
+fellowship, connection, brotherhood, and shared activities.
+
+ACTIVITIES:
+- May organize fellowship activities such as football events and other
+  brotherhood-focused activities.
+- Activities may vary depending on the plans and needs of the fellowship.
+
+NOTE:
+Do not present the examples above as an exhaustive or permanent list of
+activities.
+
+
+UNIT: SISTERS UNIT
+--------------------------------------------------
+
+PURPOSE:
+The Sisters Unit brings together the sisters within the fellowship for
+fellowship, connection, sisterhood, and shared activities.
+
+ACTIVITIES:
+- Provides opportunities for the sisters to connect and fellowship.
+- May organize activities focused on fellowship, connection, and growth.
+- Activities may vary depending on the plans and needs of the fellowship.
+
+NOTE:
+Do not present a fixed list of activities unless specific activities are
+provided by TACSFON.
+
+
+UNIT LEADERSHIP
+--------------------------------------------------
+
+STRUCTURE:
+- Every unit has a coordinator/head.
+- The coordinator/head is responsible for helping organize and coordinate
+  the activities of the unit.
+- Unit coordinators work as part of the wider fellowship structure.
+
+WEBSITE RULE:
+Do not invent or hardcode names, titles, or personal details of unit
+coordinators unless those details are provided separately.
+
+If coordinator information is eventually displayed, it should be structured
+so that it can be easily updated.
+
+
+UNIT PAGE PRESENTATION
+--------------------------------------------------
+
+DESIGN:
+The Units page should use a modern Bento-style layout.
+
+Each unit should be represented as a visual card containing:
+
+- Unit name
+- Short description
+- Relevant Lucide icon
+- Optional image from the supplied local assets
+- Subtle interaction/hover effect
+- Subtle entrance animation where appropriate
+
+The cards should visually communicate that the units are different areas of
+service working together within one fellowship.
+
+DO NOT:
+- Make the units look like corporate departments.
+- Invent responsibilities or activities.
+- Invent unit coordinators or member names.
+- Overload the page with unnecessary information.
+- Present the Brothers Unit or Sisters Unit activities as fixed responsibilities.
+
+CONTENT TONE:
+Warm, youthful, Christ-centered, clear, authentic, and community-oriented.
+
+==================================================
+END OF UNITS SECTIONS
+==================================================
+
+==================================================
+LEADERSHIP
+==================================================
+
+SECTION PURPOSE:
+The TACSFON (OAUSTECH) leadership structure consists of fellowship executives
+and coordinators who help provide direction, coordinate activities, and support
+the smooth running of the fellowship.
+
+Leadership roles should be presented as areas of responsibility and service
+within the fellowship.
+
+
+LEADERSHIP STRUCTURE
+--------------------------------------------------
+
+EXECUTIVE LEADERSHIP:
+
+- President
+- Vice President
+- General Secretary
+- Sister Coordinator
+
+
+UNIT COORDINATORS:
+
+- Bible Study Coordinator
+- Prayer Unit Coordinator
+- Evangelism Coordinator
+- Ushering Coordinator
+- Organizing Coordinator
+- Academic Coordinator
+- Drama Coordinator 1
+- Drama Coordinator 2
+- Technical Coordinator
+- Brother Coordinator
+
+
+LEADERSHIP RESPONSIBILITIES
+--------------------------------------------------
+
+PRESIDENT:
+Provides overall leadership and coordination for the fellowship.
+
+The President helps provide direction for the fellowship, oversees its
+activities, and works with other leaders and coordinators to ensure that the
+fellowship operates effectively.
+
+
+VICE PRESIDENT:
+Supports the President in providing leadership and coordination for the
+fellowship.
+
+The Vice President may assist with the coordination of fellowship activities
+and assume relevant responsibilities when required.
+
+
+GENERAL SECRETARY:
+Responsible for the fellowship's general administrative and secretarial
+coordination.
+
+The role may include handling official communication, documentation,
+records, notices, and other administrative responsibilities of the
+fellowship.
+
+
+SISTER COORDINATOR:
+Coordinates and supports the sisters within the fellowship.
+
+The role helps facilitate communication, fellowship, and activities involving
+the sisters.
+
+
+BIBLE STUDY COORDINATOR:
+Coordinates the activities of the Bible Study Unit.
+
+The coordinator helps organize Tuesday Bible Study activities and works with
+members of the unit to facilitate Bible study sessions.
+
+
+PRAYER UNIT COORDINATOR:
+Coordinates the activities of the Prayer Unit.
+
+The coordinator helps organize Friday Prayer Meetings and other prayer-related
+activities of the fellowship.
+
+
+EVANGELISM COORDINATOR:
+Coordinates the activities of the Evangelism Unit.
+
+The coordinator helps organize evangelism, outreach, and reach-out activities
+of the fellowship.
+
+
+USHERING COORDINATOR:
+Coordinates the activities of the Ushering Unit.
+
+The coordinator helps organize ushering responsibilities during fellowship
+services and other programmes.
+
+
+ORGANIZING COORDINATOR:
+Coordinates the activities of the Organizing Unit.
+
+The coordinator helps oversee practical and logistical arrangements for
+fellowship activities and events.
+
+
+ACADEMIC COORDINATOR:
+Coordinates the activities of the Academic Unit.
+
+The coordinator helps organize academic assistance, tutorials, academic
+programmes, and other activities designed to support members academically.
+
+
+DRAMA COORDINATORS:
+There are two Drama Coordinators responsible for coordinating the Drama Unit.
+
+The coordinators work together to organize drama presentations, prepare
+members, and coordinate drama activities for fellowship programmes and
+events.
+
+
+TECHNICAL COORDINATOR:
+Coordinates the technical aspects required for fellowship programmes and
+activities.
+
+The role may involve coordinating technical equipment, audiovisual support,
+and other technical requirements for services and events.
+
+
+BROTHER COORDINATOR:
+Coordinates and supports the brothers within the fellowship.
+
+The role helps facilitate communication, fellowship, and activities involving
+the brothers.
+
+
+LEADERSHIP PAGE PRESENTATION
+--------------------------------------------------
+
+DESIGN:
+The leadership section/page should feel personal, approachable, and
+community-oriented.
+
+Use a clean visual hierarchy rather than presenting the leadership as a
+corporate organizational chart.
+
+POSSIBLE GROUPING:
+
+1. EXECUTIVE LEADERSHIP
+   - President
+   - Vice President
+   - General Secretary
+   - Sister Coordinator
+
+2. UNIT COORDINATORS
+   - Bible Study Coordinator
+   - Prayer Unit Coordinator
+   - Evangelism Coordinator
+   - Ushering Coordinator
+   - Organizing Coordinator
+   - Academic Coordinator
+   - Drama Coordinator 1
+   - Drama Coordinator 2
+   - Technical Coordinator
+   - Brother Coordinator
+
+
+IMPORTANT CONTENT RULES:
+--------------------------------------------------
+
+- Do not invent names of current leaders.
+- Do not invent additional leadership positions.
+- Do not invent responsibilities beyond what is reasonably implied by the
+  position unless additional details are provided.
+- Names, photographs, titles, and tenure/session information should be
+  provided separately before being added to the website.
+- Leadership information should be easy to update in the future.
+- Avoid making the leadership page feel overly formal or corporate.
+- Present leadership as service, coordination, and responsibility within the
+  fellowship.
+
+===================================
+END OF LEADERSHIP SECTION
+===================================
+
+==================================================
+ABOUT TACSFON
+==================================================
+
+SECTION STATUS:
+PLACEHOLDER CONTENT — REPLACE WITH OFFICIAL INFORMATION LATER.
+
+SECTION PURPOSE:
+Introduce visitors to TACSFON (OAUSTECH), its identity, purpose, connection
+to The Apostolic Church, and its role within the university environment.
+
+PLACEHOLDER:
+TACSFON (OAUSTECH) is a student fellowship committed to helping students
+grow in their relationship with Jesus Christ through fellowship, the study
+of God's Word, prayer, worship, evangelism, service, and Christian community.
+
+ADDITIONAL INFORMATION:
+[PLACEHOLDER — Insert the official description of TACSFON and its purpose.]
+
+RELATIONSHIP WITH THE APOSTOLIC CHURCH:
+[PLACEHOLDER — Insert the official explanation of TACSFON's relationship with
+The Apostolic Church.]
+
+RELATIONSHIP WITH JCCF:
+[PLACEHOLDER — Insert the official explanation of TACSFON's relationship with
+the Joint Campus Christian Fellowship (JCCF).]
+
+WHY TACSFON EXISTS:
+[PLACEHOLDER — Insert the official explanation of TACSFON's purpose within
+the student environment.]
+
+CONTENT RULE:
+Do not present placeholder information as confirmed organizational facts.
+The placeholder must be easy to identify and replace.
+
+
+==================================================
+VISION, MISSION & VALUES
+==================================================
+
+SECTION STATUS:
+PLACEHOLDER CONTENT — REPLACE WITH OFFICIAL INFORMATION LATER.
+
+VISION:
+[PLACEHOLDER — Insert official TACSFON (OAUSTECH) vision.]
+
+MISSION:
+[PLACEHOLDER — Insert official TACSFON (OAUSTECH) mission.]
+
+CORE VALUES:
+[PLACEHOLDER — Insert official TACSFON (OAUSTECH) core values.]
+
+CONTENT RULE:
+Do not invent official vision, mission, or values.
+Use placeholder content until the official information is supplied.
+
+
+==================================================
+CURRENT YEARLY THEME
+==================================================
+
+THEME:
+The Davidic Generation
+
+THEME STATUS:
+CURRENT YEARLY THEME.
+
+DESCRIPTION:
+[PLACEHOLDER — Insert the official explanation of "The Davidic Generation"
+and what the theme means for TACSFON (OAUSTECH) this year.]
+
+THEME ORIGIN:
+The theme was received through a prophetic direction believed to have been
+given to TACSFON through the Holy Spirit.
+
+OFFICIAL EXPLANATION:
+[PLACEHOLDER — Insert the official explanation of the prophecy and its
+application to the fellowship.]
+
+ASSOCIATED SCRIPTURES:
+[PLACEHOLDER — Insert the official Bible scripture(s) associated with the
+yearly theme.]
+
+WEBSITE RULE:
+- Clearly identify "The Davidic Generation" as the current yearly theme.
+- Do not present it as TACSFON's permanent or unchanging motto.
+- Future yearly themes should be easy to replace without restructuring the
+  website.
+- Do not invent details about the prophecy.
+- Do not fabricate scripture references.
+
+
+==================================================
+EVENTS & PROGRAMMES
+==================================================
+
+SECTION STATUS:
+PLACEHOLDER EVENT CONTENT — ACTUAL EVENT INFORMATION WILL BE PROVIDED
+SEPARATELY.
+
+PURPOSE:
+The Events section should display upcoming and relevant TACSFON programmes
+and activities.
+
+PLACEHOLDER EVENTS:
+- [PLACEHOLDER EVENT]
+- [PLACEHOLDER EVENT]
+- [PLACEHOLDER EVENT]
+- [PLACEHOLDER EVENT]
+
+POSSIBLE EVENT TYPES:
+- TACSFON Week / Anniversary
+- Monthly Vigil
+- Evangelism / Outreach
+- Seminars
+- Conferences
+- Retreats
+- Special Services
+- Academic Programmes
+- Other Fellowship Programmes
+
+EVENT DATA:
+Each event should support:
+
+- Event title
+- Short description
+- Date
+- Time
+- Location
+- Event category/type
+- Event image or flyer
+- Optional external link
+- Published/unpublished status
+
+IMPORTANT:
+Specific scheduled events should be managed through the admin dashboard
+rather than hardcoded into the frontend.
+
+Regular recurring activities such as Sunday Service, Tuesday Bible Study,
+Friday Prayer Meeting, and Saturday Choir Practice may remain part of the
+static fellowship information unless specific occurrences need to be
+highlighted as events.
+
+
+==================================================
+GALLERY
+==================================================
+
+SECTION PURPOSE:
+Showcase visual moments from TACSFON (OAUSTECH), giving visitors a sense of
+the fellowship, its activities, community, and environment.
+
+IMAGE CATEGORIES:
+- Fellowship Services
+- Campus
+- Fellowship Activities
+- Events
+- Evangelism / Outreach
+- Choir Activities
+- Other relevant fellowship moments
+
+IMAGE SOURCE:
+All gallery images must come from the supplied local assets.
+
+DO NOT:
+- Use Unsplash, Pexels, or other external stock-image sources.
+- Invent photographs.
+- Use unrelated stock imagery.
+
+DESIGN:
+The Gallery should use a visually interesting Bento-style or editorial
+layout where appropriate.
+
+Images should feel natural and authentic rather than overly commercial.
+
+Use:
+- Next.js Image
+- Proper image optimization
+- Meaningful alt text
+- Responsive layouts
+- Subtle hover/entrance animations where appropriate
+
+
+==================================================
+DONATION
+==================================================
+
+SECTION TYPE:
+DONATION MODAL — NO DEDICATED DONATION PAGE.
+
+PURPOSE:
+Provide visitors with a simple and trustworthy way to view TACSFON's
+donation/payment information.
+
+DONATION INFORMATION:
+
+ACCOUNT NAME:
+THE APOSTOLIC CHURCH STUDENT FELLOWSHIP
+
+BANK:
+UBA
+
+ACCOUNT NUMBER:
+1112020021
+
+DONATION PURPOSE:
+- Building Project
+- Church Growth
+
+DONATION MODAL SHOULD INCLUDE:
+
+- Bank name
+- Account name
+- Account number
+- Donation purpose
+- Copy button for each relevant payment detail
+- A clear donation call-to-action
+- A field for the donor's name
+- A field for the subject/purpose/narration of the donation
+
+FORM BEHAVIOUR:
+The donor should be able to indicate what their donation is intended for,
+such as:
+
+- Building Project
+- Church Growth
+- Other / General Donation
+
+IMPORTANT:
+- Do not create a separate donation page.
+- The donation interface should open as a polished shadcn/ui Dialog/Modal.
+- Payment details must be easy to copy.
+- Do not imply that the website processes payments directly unless a payment
+  gateway is added later.
+- Do not invent additional payment methods or account information.
+
+
+==================================================
+SOCIAL MEDIA
+==================================================
+
+SOCIAL MEDIA NAME:
+Tacsfon (Oaustech)
+
+PLATFORMS:
+- Facebook
+- Instagram
+- TikTok
+- X
+
+SOCIAL LINKS:
+[PLACEHOLDER — Insert official social media URLs.]
+
+IMPORTANT:
+Do not invent social media URLs.
+
+The social media identity should be displayed consistently across the
+website.
+
+
+==================================================
+CONTACT INFORMATION
+==================================================
+
+CONTACT EMAIL:
+festusphillip19@gmail.com
+
+CONTACT PHONE:
+09140809527
+
+LOCATION:
+Igodan Methodist Primary School,
+Okitipupa,
+Ondo State,
+Nigeria
+
+CONTACT FORM:
+The website should include a compact contact form, preferably integrated
+into or positioned near the footer rather than creating a large standalone
+contact section.
+
+FORM FIELDS:
+- Name
+- Email
+- Phone (optional)
+- Subject / Reason
+- Message
+
+FORM PURPOSE:
+Allow visitors, students, members, and interested individuals to contact
+the fellowship.
+
+FORM SUBMISSION:
+Visitor
+→ React Hook Form
+→ Zod validation
+→ Server-side validation
+→ Rate limiting
+→ Brevo
+→ Fellowship/admin email
+
+The visitor should receive a warm confirmation email after successful
+submission.
+
+IMPORTANT:
+- Contact information should be easy to update.
+- Email credentials must never be exposed to the client.
+- Do not invent additional contact information.
+
+
+==================================================
+RESOURCES / SERMONS
+==================================================
+
+STATUS:
+NOT REQUIRED.
+
+Do not create a dedicated Resources, Sermons, or downloadable materials
+section unless this requirement changes in the future.

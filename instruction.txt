@@ -1,0 +1,1963 @@
+============================================================
+TACSFON (OAUSTECH) — FULL-STACK WEBSITE EXECUTION SPECIFICATION
+============================================================
+
+PROJECT NAME
+TACSFON (OAUSTECH)
+
+OFFICIAL ORGANIZATION
+TACSFON — The Apostolic Church Student Fellowship of Nigeria
+
+CURRENT FELLOWSHIP IDENTITY
+TACSFON (OAUSTECH)
+
+CURRENT YEARLY THEME
+"The Davidic Generation"
+
+IMPORTANT:
+The fellowship name, yearly theme, social links, contact information,
+donation details, and other organizational information must be easy
+to change without requiring changes throughout the UI components.
+
+============================================================
+1. ROLE
+============================================================
+
+You are a senior full-stack Next.js engineer and UI/UX designer.
+
+Build a polished, production-ready website for TACSFON (OAUSTECH).
+
+Do not build a generic church template.
+
+The website should feel:
+
+- modern
+- welcoming
+- youthful
+- spiritual
+- editorial
+- clean
+- natural
+- elegant
+- subtle
+- trustworthy
+- appropriate for a university Christian fellowship
+
+The design should combine:
+
+MODERN CHURCH
++
+EDITORIAL DESIGN
++
+NATURAL / ORGANIC VISUAL LANGUAGE
+
+Avoid making the website look like:
+
+- a generic SaaS dashboard
+- a generic corporate website
+- an old-fashioned church website
+- an overly luxurious "premium dark" website
+- an overly animated landing page
+
+============================================================
+2. PRIMARY OBJECTIVES
+============================================================
+
+The website should:
+
+1. Introduce TACSFON (OAUSTECH).
+2. Explain what the fellowship is about.
+3. Communicate the current yearly theme.
+4. Display fellowship activities and programs.
+5. Display events and programs, including their flyers/images.
+6. Explain the different fellowship units.
+7. Provide useful information about TACSFON.
+8. Allow visitors to contact the fellowship.
+9. Allow visitors to access external social/community links.
+10. Provide a donation interface.
+11. Allow authorized administrators to manage dynamic events.
+12. Provide a secure admin dashboard.
+13. Be highly responsive.
+14. Be accessible.
+15. Be SEO-friendly.
+16. Be friendly to search engines and AI/agentic browsing systems.
+
+============================================================
+3. NON-NEGOTIABLE TECHNOLOGY
+============================================================
+
+Use:
+
+- Next.js
+- App Router
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Zod
+- React Hook Form
+- Lucide React
+- Framer Motion
+- Supabase
+- Brevo
+- Express where backend separation is actually required/appropriate
+
+Do not introduce unnecessary frameworks.
+
+Use server-side functionality provided by Next.js wherever possible.
+
+Do not create unnecessary backend infrastructure when a Next.js
+Route Handler or Server Action is sufficient.
+
+============================================================
+4. DATABASE DECISION
+============================================================
+
+Supabase WILL be used.
+
+Do not attempt to eliminate the database because the admin dashboard
+requires persistent dynamic content.
+
+Use Supabase for:
+
+- administrator authentication
+- dynamic event storage
+- event images/files where appropriate
+- required persistent dynamic data
+
+Do NOT turn the project into a complicated CMS.
+
+Keep the database intentionally small.
+
+Static organizational content should remain outside the database.
+
+============================================================
+5. AUTHENTICATION
+============================================================
+
+Administrators use Supabase Authentication.
+
+IMPORTANT:
+
+There must NOT be a public administrator signup page.
+
+Administrator accounts are created directly through Supabase.
+
+The application should provide:
+
+/admin/login
+
+and authenticated administrator access to:
+
+/admin
+
+Logout must be supported.
+
+Protect all admin routes.
+
+An unauthenticated user must never be able to access admin functionality.
+
+Do not expose Supabase service-role credentials to the browser.
+
+Use appropriate Supabase security practices.
+
+============================================================
+6. ADMIN DASHBOARD
+============================================================
+
+Build a simple and clean administrator dashboard.
+
+Do NOT over-engineer it.
+
+Suggested structure:
+
+/admin
+/admin/login
+/admin/events
+/admin/events/new
+/admin/events/[id]/edit
+
+Dashboard should provide:
+
+- overview
+- event management
+- account/logout functionality
+
+The dashboard does not need:
+
+- complicated analytics
+- complicated CMS functionality
+- unnecessary charts
+- complex permissions systems
+- unnecessary settings pages
+
+============================================================
+7. EVENT MANAGEMENT
+============================================================
+
+Events are dynamic.
+
+Authenticated administrators can:
+
+- create events
+- edit events
+- delete events
+- publish/unpublish events
+
+Event fields should include at minimum:
+
+- title
+- description
+- date
+- time
+- location
+- event image/flyer
+- optional external link
+- published status
+
+Potential additional useful field:
+
+- event category/type
+
+Do not force every event to have every field.
+
+Some events may be simple.
+
+Some may be major programs.
+
+The UI must accommodate both.
+
+============================================================
+8. EVENT IMAGE / FLYER SYSTEM
+============================================================
+
+Event images/flyers must be supported.
+
+The event editor should make uploading an image simple.
+
+Use Supabase Storage where appropriate.
+
+Validate uploaded files.
+
+Do not allow arbitrary unsafe file types.
+
+The public event interface should display event flyers/images elegantly.
+
+Images must not destroy the visual hierarchy.
+
+Use Next.js Image wherever applicable.
+
+============================================================
+9. STATIC VS DYNAMIC CONTENT
+============================================================
+
+STATIC CONTENT:
+
+- About TACSFON
+- general fellowship information
+- units
+- fellowship identity
+- general beliefs/information
+- Bible quotes
+- general descriptions
+- footer information
+- donation information
+- social media links
+- other organizational information
+
+DYNAMIC CONTENT:
+
+- events
+- programs that administrators need to regularly manage
+- event flyers
+- event dates
+- event descriptions
+- event links
+- published/unpublished status
+
+Do not put every piece of content into Supabase.
+
+============================================================
+10. CONTENT FILE
+============================================================
+
+A separate content file will be provided by the project owner.
+
+The file contains content direction and organizational information.
+
+Do NOT expect the content file to contain every sentence required for
+the website.
+
+Use the provided content as the source of truth.
+
+Where the content gives direction rather than exact copy, write
+appropriate polished copy that stays faithful to TACSFON.
+
+Do not invent organizational facts.
+
+If information is genuinely unavailable, use a clearly identifiable
+placeholder rather than presenting invented facts as real.
+
+Make changeable content centralized.
+
+Avoid hardcoding organizational information across dozens of components.
+
+============================================================
+11. IMAGE ASSET SYSTEM
+============================================================
+
+A folder containing website images/assets will be provided.
+
+FIRST ACTION:
+
+Inspect the provided asset folder before designing the website.
+
+Understand:
+
+- available images
+- logos
+- photographs
+- flyers
+- icons
+- possible videos
+- other media
+
+Do NOT use external stock photography.
+
+Do NOT use Unsplash, Pexels, random image URLs, or other stock-image
+services.
+
+Use the provided assets.
+
+Create a centralized:
+
+images.ts
+
+file/module.
+
+The purpose of images.ts is to provide a single organized place where
+website image references are managed.
+
+Do not scatter image paths throughout components.
+
+Example conceptual structure:
+
+images.ts
+
+- logo
+- hero images
+- fellowship images
+- unit images
+- gallery images
+- decorative images
+- other assets
+
+If optional local videos exist, manage their references in an equally
+organized way.
+
+Use meaningful names.
+
+Do not use filenames such as:
+
+image1
+image2
+final-final
+newimage
+
+unless those are unavoidable actual source filenames.
+
+============================================================
+12. NO EXTERNAL STOCK IMAGES
+============================================================
+
+This is a strict requirement.
+
+Never introduce external stock imagery merely to make the design
+look more complete.
+
+If an appropriate local image does not exist:
+
+- use a designed visual treatment
+- use typography
+- use a gradient
+- use an existing appropriate asset
+- or use a restrained placeholder
+
+Do not secretly introduce stock images.
+
+============================================================
+13. VISUAL DESIGN SYSTEM
+============================================================
+
+PRIMARY COLOR:
+
+FOREST GREEN
+
+The exact shade should feel rich and natural rather than neon.
+
+SECONDARY:
+
+WHITE
+
+White should provide generous breathing room.
+
+ACCENT:
+
+MUTED / SOPHISTICATED GOLD
+
+Gold should NOT look like bright yellow.
+
+Use gold primarily for:
+
+- small accents
+- highlights
+- icons
+- borders
+- selected states
+- decorative details
+- occasional CTA emphasis
+
+Do not flood the interface with gold.
+
+OPTIONAL SUPPORTING NEUTRALS:
+
+Use tasteful warm/cool neutral shades as required for hierarchy.
+
+The overall interface should remain predominantly:
+
+FOREST GREEN + WHITE
+
+with restrained GOLD.
+
+============================================================
+14. DESIGN CHARACTER
+============================================================
+
+The website should have:
+
+- generous whitespace
+- strong typography
+- editorial hierarchy
+- clean grids
+- beautiful imagery
+- subtle gradients
+- subtle borders
+- restrained shadows
+- moderate corner rounding
+- natural spacing
+- visual rhythm
+
+Rounded corners:
+
+YES.
+
+But do not use extremely rounded "pill everything" design.
+
+Avoid:
+
+- excessive rounded cards
+- excessive shadows
+- excessive glassmorphism
+- excessive gradients
+- excessive borders
+- excessive decorative effects
+
+============================================================
+15. DARK SECTIONS
+============================================================
+
+Dark sections are allowed.
+
+However, do NOT create aggressive dark premium-looking sections.
+
+Deep forest green can be used naturally for:
+
+- CTA sections
+- footer
+- selected hero areas
+- emphasis sections
+
+Do not make the entire website dark.
+
+The site should feel bright, welcoming and breathable.
+
+============================================================
+16. GRADIENTS
+============================================================
+
+Subtle gradients are encouraged.
+
+Use them to add depth.
+
+Do NOT use:
+
+- loud gradients
+- rainbow gradients
+- neon gradients
+- excessive gradient text
+
+Gradients should feel natural and almost understated.
+
+============================================================
+17. BENTO GRID REQUIREMENT
+============================================================
+
+BENTO GRID LAYOUTS ARE MANDATORY.
+
+Use Bento layouts throughout the website where they improve the
+presentation.
+
+Do NOT force Bento layouts where they make the content worse.
+
+Use CSS Grid + Tailwind for custom Bento compositions.
+
+Bento layouts can be used for:
+
+- fellowship introduction
+- units
+- activities
+- events
+- impact/highlights
+- resources
+- gallery previews
+- calls to action
+- other appropriate content
+
+Cards should have varied visual hierarchy.
+
+Avoid making every card identical.
+
+A Bento grid should feel intentionally designed rather than being a
+collection of random rectangles.
+
+============================================================
+18. HOMEPAGE
+============================================================
+
+The homepage must remain relatively short.
+
+Do NOT create a giant homepage containing every piece of information.
+
+The homepage should communicate the most important things quickly.
+
+Suggested structure:
+
+1. Navbar
+2. Hero
+3. Short introduction / identity section
+4. Bento section showing key fellowship areas
+5. Upcoming / highlighted events
+6. Units preview
+7. Bible quote / scripture section
+8. Small CTA
+9. Footer with compact contact interface
+
+Keep sections concise.
+
+The homepage should make users want to explore the rest of the site.
+
+Do not duplicate entire pages inside the homepage.
+
+============================================================
+19. HERO
+============================================================
+
+Hero should communicate:
+
+- TACSFON (OAUSTECH)
+- current theme: The Davidic Generation
+- concise statement about the fellowship
+- clear CTA(s)
+
+Use supplied imagery where appropriate.
+
+The hero should be visually strong but NOT oversized to the point where
+the user sees nothing else.
+
+Avoid generic:
+
+"Welcome to our church"
+
+copy.
+
+Make it specific to a student fellowship.
+
+============================================================
+20. SUGGESTED PUBLIC PAGES
+============================================================
+
+Create:
+
+/
+
+ /about
+
+ /events
+
+ /units
+
+ /gallery
+
+ /resources or /sermons
+
+ /contact
+
+Do not create a separate Ministries page.
+
+Use:
+
+/units
+
+instead.
+
+Donation should NOT require a dedicated page.
+
+It should be accessible through prominent but tasteful Donate buttons.
+
+Additional pages may be introduced only if they genuinely improve the
+website.
+
+============================================================
+21. ABOUT PAGE
+============================================================
+
+Explain:
+
+- what TACSFON is
+- the fellowship's purpose
+- its student/community orientation
+- values
+- current theme where appropriate
+
+Use a visual storytelling approach.
+
+Do not write a wall of text.
+
+Use Bento or editorial layouts where appropriate.
+
+============================================================
+22. UNITS PAGE
+============================================================
+
+Units are organizations/groups within the fellowship.
+
+Examples may include:
+
+- Bible Study Unit
+- Prayer Unit
+- Evangelism Unit
+- Choir Unit
+
+Do not assume these are the complete list unless confirmed by the
+provided content.
+
+The page should focus on:
+
+- what each unit does
+- its purpose
+- its activities
+- how it contributes to the fellowship
+
+Do NOT build this as a staff/member directory.
+
+Do not require individual member information.
+
+Use attractive Bento cards or layouts.
+
+============================================================
+23. EVENTS PAGE
+============================================================
+
+Display published events.
+
+Each event should communicate:
+
+- title
+- date
+- time when available
+- location when available
+- description
+- flyer/image when available
+- external link when available
+
+Provide an attractive event detail experience.
+
+The event system must distinguish between:
+
+- upcoming events
+- past events
+
+where useful.
+
+Do not show unpublished events publicly.
+
+============================================================
+24. SOCIAL / EXTERNAL LINKS
+============================================================
+
+Support external community/social links.
+
+Platforms currently expected:
+
+- Facebook
+- TikTok
+- Instagram
+- X
+
+DO NOT include YouTube unless later requested.
+
+Actual URLs will be provided separately.
+
+Do not invent social URLs.
+
+Use Lucide icons where available.
+
+============================================================
+25. GALLERY
+============================================================
+
+Use the supplied local image assets.
+
+Create a visually interesting gallery.
+
+Bento layouts are encouraged.
+
+Do not create an unnecessarily complicated gallery system.
+
+The gallery should feel like a visual story of the fellowship.
+
+============================================================
+26. BIBLE QUOTES / SCRIPTURE
+============================================================
+
+Include Bible quotes throughout the site where appropriate.
+
+They should be:
+
+- visually elegant
+- short
+- relevant
+- not excessive
+
+Do not turn every section into a Bible verse.
+
+If exact scripture wording is used, preserve accuracy.
+
+============================================================
+27. DONATION EXPERIENCE
+============================================================
+
+There should be a Donate CTA/button.
+
+There does NOT need to be a dedicated donation page.
+
+Clicking Donate should open a tasteful modal using shadcn/ui.
+
+The modal should display the available:
+
+- bank information
+- payment information
+- account details
+- purpose/instructions
+
+Donation details should be centralized and easy to change.
+
+Users must be able to COPY individual details easily.
+
+Provide appropriate copy feedback such as:
+
+"Copied"
+
+or a suitable accessible equivalent.
+
+Where a donor needs to provide a name/reference/subject, clearly explain
+what they should use.
+
+Example:
+
+Name:
+[donor name]
+
+Subject / narration:
+[what the donation is for]
+
+Do not invent actual bank details.
+
+These will be provided by the project owner.
+
+============================================================
+28. CONTACT EXPERIENCE
+============================================================
+
+Contact should NOT be a giant standalone form dominating the website.
+
+The primary contact experience should live in/near the footer.
+
+It should collect enough information to make the message useful.
+
+Suggested fields:
+
+- Name
+- Email
+- Phone (optional)
+- Subject / reason for contacting
+- Message
+
+Use:
+
+React Hook Form
++
+Zod
+
+Client-side validation is required.
+
+Server-side validation is ALSO required.
+
+Never trust frontend validation alone.
+
+============================================================
+29. BREVO EMAIL SYSTEM
+============================================================
+
+Brevo is used for email delivery.
+
+Flow:
+
+Visitor
+   ↓
+Contact form
+   ↓
+React Hook Form
+   ↓
+Zod validation
+   ↓
+Next.js server-side endpoint
+   ↓
+Rate limiting / abuse protection
+   ↓
+Brevo API
+   ↓
+Admin receives email
+   ↓
+Visitor receives confirmation email
+
+The project owner will provide:
+
+- Brevo API key
+- sender email
+- sender name
+- receiving/admin email
+- any other required credentials
+
+============================================================
+30. BREVO SECURITY
+============================================================
+
+BREVO API credentials MUST NEVER be exposed to the client.
+
+Do not put Brevo credentials into:
+
+- client components
+- browser-accessible variables
+- NEXT_PUBLIC_ environment variables
+- source code
+
+Use environment variables.
+
+Example:
+
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=
+CONTACT_RECEIVER_EMAIL=
+
+Use actual variable names consistently.
+
+Never commit secrets to Git.
+
+Provide/update .env.example with placeholders only.
+
+============================================================
+31. CONTACT CONFIRMATION EMAIL
+============================================================
+
+After successful submission, send a warm confirmation email to the
+visitor.
+
+The email should feel human and welcoming.
+
+Do NOT write a robotic message such as:
+
+"Your ticket has been submitted."
+
+The tone should communicate:
+
+- gratitude
+- warmth
+- fellowship
+- reassurance that the message was received
+
+Do not make theological claims that aren't supported by the provided
+content.
+
+============================================================
+32. RATE LIMITING
+============================================================
+
+Do not use Cloudflare Turnstile or other external CAPTCHA systems.
+
+Implement basic but strict server-side rate limiting.
+
+The contact endpoint must have protection against:
+
+- excessive submissions
+- obvious abuse
+- malformed requests
+- oversized payloads
+
+Do not rely only on client-side restrictions.
+
+The rate-limiting implementation should be appropriate for the chosen
+deployment architecture.
+
+============================================================
+33. SERVER-SIDE SECURITY
+============================================================
+
+Validate all external input server-side.
+
+Use Zod schemas.
+
+Never trust:
+
+- form data
+- query parameters
+- route parameters
+- uploaded filenames
+- uploaded file types
+- admin input
+
+Avoid leaking:
+
+- API keys
+- Supabase service keys
+- internal errors
+- stack traces
+- implementation details
+
+Return safe user-facing errors.
+
+Log useful errors server-side where appropriate.
+
+============================================================
+34. ZOD
+============================================================
+
+Zod is mandatory.
+
+Create reusable schemas for:
+
+- contact form
+- event creation
+- event editing
+- any other user/admin input
+
+The schemas should be shared appropriately between client and server
+where practical.
+
+Do not duplicate validation rules unnecessarily.
+
+============================================================
+35. REACT HOOK FORM
+============================================================
+
+Use React Hook Form for forms.
+
+At minimum:
+
+- contact form
+- event creation/editing form
+
+Provide:
+
+- validation messages
+- loading states
+- disabled submit state
+- success state
+- error state
+- accessible labels
+
+============================================================
+36. SHADCN/UI
+============================================================
+
+shadcn/ui is mandatory.
+
+Use shadcn components where they genuinely improve:
+
+- forms
+- buttons
+- dialogs
+- modals
+- inputs
+- textareas
+- cards
+- dropdowns
+- alerts
+- confirmation dialogs
+- admin UI
+
+Do not blindly use shadcn components for every visual element.
+
+Custom components are encouraged when necessary.
+
+Maintain a cohesive visual system.
+
+============================================================
+37. ACCESSIBILITY
+============================================================
+
+Accessibility is mandatory.
+
+Use:
+
+- semantic HTML
+- proper heading hierarchy
+- labels for inputs
+- keyboard navigation
+- visible focus states
+- accessible dialogs
+- accessible buttons
+- accessible form errors
+- meaningful alt text
+- aria-label where needed
+- appropriate aria-describedby relationships
+- sufficient color contrast
+
+Do not add ARIA attributes unnecessarily.
+
+Prefer semantic HTML first.
+
+Respect reduced-motion preferences.
+
+============================================================
+38. RESPONSIVENESS
+============================================================
+
+The website must be mobile-first.
+
+Support:
+
+- mobile
+- tablet
+- laptop
+- desktop
+- large desktop
+
+Do not simply shrink desktop layouts.
+
+Design intentionally for smaller screens.
+
+Bento layouts must gracefully transform on mobile.
+
+No horizontal overflow.
+
+No broken navigation.
+
+No tiny text.
+
+No unusable modals.
+
+No oversized desktop-only elements.
+
+============================================================
+39. NAVIGATION
+============================================================
+
+Desktop navigation should be clean and minimal.
+
+Mobile navigation should be intentionally designed.
+
+Include a prominent Donate CTA where appropriate without overwhelming
+the navigation.
+
+Use Lucide icons.
+
+The current fellowship identity should be visible.
+
+Do not overcrowd the navbar.
+
+============================================================
+40. TYPOGRAPHY
+============================================================
+
+DO NOT use Inter.
+
+Do not default to the most common generic SaaS typography.
+
+Choose a more distinctive typography pairing appropriate for:
+
+- editorial design
+- student fellowship
+- modern church
+- natural aesthetic
+
+Use next/font.
+
+Prefer a refined display font for major headings paired with a highly
+readable body font.
+
+Typography should provide character without sacrificing readability.
+
+Avoid excessively chunky/chubby typography.
+
+Do not use too many font families.
+
+============================================================
+41. ANIMATION
+============================================================
+
+Use Framer Motion.
+
+Animations must be SUBTLE.
+
+Preferred effects:
+
+- fade in
+- small translate
+- small scale
+- staggered card appearance
+- image reveal
+- subtle hover interaction
+
+Use viewport/visible-in-view behavior where appropriate.
+
+Avoid:
+
+- excessive parallax
+- aggressive bouncing
+- spinning
+- large movement
+- unnecessary page transitions
+- animation on every element
+
+The user should feel the website is polished, not animated.
+
+Respect prefers-reduced-motion.
+
+============================================================
+42. COMPONENT ARCHITECTURE
+============================================================
+
+Build reusable components.
+
+Do not create one enormous page component.
+
+Organize reusable UI logically.
+
+Potential categories:
+
+components/
+  ui/
+  layout/
+  navigation/
+  sections/
+  events/
+  units/
+  gallery/
+  forms/
+  donation/
+  admin/
+
+Use clear naming.
+
+Avoid unnecessary component fragmentation.
+
+A component should have a meaningful responsibility.
+
+============================================================
+43. DATA ARCHITECTURE
+============================================================
+
+Centralize static information.
+
+Potential structure:
+
+src/
+  data/
+    content.ts
+    images.ts
+    social.ts
+    donation.ts
+
+Adapt the exact structure to the project.
+
+Do not hardcode the same information in multiple components.
+
+For example, the fellowship name should not be separately hardcoded
+inside:
+
+- navbar
+- footer
+- hero
+- metadata
+- mobile navigation
+
+Instead, centralize reusable organizational configuration.
+
+============================================================
+44. SUPABASE STORAGE
+============================================================
+
+Use Supabase Storage for administrator-uploaded event images where
+appropriate.
+
+The public website should only access files that are intended to be
+public.
+
+Ensure storage policies are properly configured.
+
+Do not expose privileged Supabase credentials.
+
+Use secure server-side operations where required.
+
+============================================================
+45. DATABASE SCHEMA
+============================================================
+
+Keep the schema simple.
+
+At minimum, an events table should support:
+
+id
+title
+description
+event_date
+event_time
+location
+image_url / storage reference
+external_url
+category/type if useful
+published
+created_at
+updated_at
+
+Use appropriate types.
+
+Do not store redundant information.
+
+Use timestamps appropriately.
+
+Do not store secrets in the database.
+
+Authentication should be handled by Supabase Auth rather than inventing
+a custom password system.
+
+============================================================
+46. ADMIN EVENT UX
+============================================================
+
+Creating/editing an event should be simple.
+
+The administrator should not feel like they are using a complicated CMS.
+
+The form should have:
+
+- clear labels
+- logical grouping
+- image upload
+- preview where useful
+- save button
+- cancel button
+- loading state
+- validation
+- success feedback
+- failure feedback
+
+Deleting an event should require confirmation.
+
+============================================================
+47. ERROR HANDLING
+============================================================
+
+Every important asynchronous operation needs proper states.
+
+Examples:
+
+Loading:
+"Saving event..."
+
+Success:
+"Event published successfully."
+
+Failure:
+"We couldn't save this event. Please try again."
+
+Contact:
+"Your message has been sent."
+
+Contact failure:
+"We couldn't send your message right now. Please try again."
+
+Do not expose raw backend errors to visitors.
+
+============================================================
+48. SEO
+============================================================
+
+Implement proper SEO.
+
+Include:
+
+- title metadata
+- descriptions
+- canonical URLs
+- Open Graph metadata
+- social sharing metadata
+- favicon
+- sitemap
+- robots.txt
+- semantic HTML
+- meaningful headings
+- descriptive URLs
+
+Every major public page should have appropriate metadata.
+
+Do not use generic metadata such as:
+
+"Next.js App"
+
+============================================================
+49. STRUCTURED DATA
+============================================================
+
+Use JSON-LD where appropriate.
+
+Consider structured data for:
+
+- organization
+- events
+- website
+- relevant local/organizational information
+
+Only include facts actually known.
+
+Do not fabricate addresses, phone numbers, dates, or organizational
+details.
+
+============================================================
+50. AGENTIC / LLM DISCOVERABILITY
+============================================================
+
+The website should be understandable by AI agents and search systems.
+
+Use:
+
+- semantic HTML
+- descriptive page titles
+- clear page descriptions
+- structured data
+- logical URLs
+- machine-readable organization information
+- clean navigation
+- descriptive link text
+- accessible content
+- clear event information
+
+Where appropriate, provide an llms.txt file containing a concise
+description of the website and its important resources.
+
+Do not stuff keywords.
+
+Do not create artificial AI SEO content.
+
+The site should simply be clear and well structured.
+
+============================================================
+51. PERFORMANCE
+============================================================
+
+Optimize for performance.
+
+Use:
+
+- next/image
+- next/font
+- lazy loading where appropriate
+- server components by default
+- client components only when necessary
+- efficient data fetching
+- minimal JavaScript where possible
+
+Do not turn every component into a Client Component.
+
+Use "use client" only when required.
+
+Avoid unnecessary libraries.
+
+============================================================
+52. SERVER / CLIENT BOUNDARIES
+============================================================
+
+Prefer Server Components.
+
+Client Components should be used for:
+
+- interactive forms
+- animations where necessary
+- dialogs
+- interactive admin functionality
+- client-side state
+
+Do not unnecessarily make entire pages client-side.
+
+Keep API keys and sensitive operations server-side.
+
+============================================================
+53. API / BACKEND
+============================================================
+
+Use Next.js server functionality for application backend operations
+unless a separate Express service is genuinely necessary.
+
+Do not create Express merely for the sake of saying Express is used.
+
+If Express is included, it must have a clear responsibility.
+
+The preferred architecture is:
+
+Frontend
+   ↓
+Next.js
+   ↓
+Server/API layer
+   ├── Supabase
+   └── Brevo
+
+Avoid unnecessary duplication between Next.js API routes and Express.
+
+============================================================
+54. IMAGE OPTIMIZATION
+============================================================
+
+Use Next.js Image.
+
+Provide meaningful alt text.
+
+Do not use image paths directly everywhere.
+
+Use the centralized images.ts system.
+
+Ensure images have sensible sizing and responsive behavior.
+
+Avoid huge unoptimized images being loaded on mobile.
+
+============================================================
+55. FOOTER
+============================================================
+
+Footer should contain:
+
+- TACSFON identity
+- short fellowship description
+- navigation links
+- social links
+- Donate CTA
+- compact contact form
+- relevant contact information
+- copyright
+- current theme where appropriate
+
+Do not make the footer overwhelmingly large.
+
+Contact functionality belongs here rather than creating a giant contact
+section on the homepage.
+
+============================================================
+56. CONTACT FORM UX
+============================================================
+
+The contact form should feel lightweight.
+
+Do not ask unnecessary questions.
+
+Suggested:
+
+Name
+Email
+Phone (optional)
+Subject
+Message
+
+Include:
+
+- clear labels
+- validation
+- loading indicator
+- success state
+- error state
+- accessible messages
+
+Prevent accidental duplicate submissions.
+
+============================================================
+57. DONATION MODAL UX
+============================================================
+
+The donation modal should be beautiful and simple.
+
+Suggested structure:
+
+Support the Work
+
+Short explanation.
+
+Bank details / payment details.
+
+Each important field should have:
+
+[Copy]
+
+After copying:
+
+[Copied]
+
+Include clear instructions for:
+
+- donor name
+- narration/reference
+- what the donation is regarding
+
+Do not force users to navigate away from the website just to see
+donation details.
+
+============================================================
+58. CONTENT QUALITY
+============================================================
+
+Do not write filler.
+
+Avoid phrases such as:
+
+"Lorem ipsum"
+
+"Welcome to our amazing church"
+
+"Where faith meets excellence"
+
+unless explicitly provided or genuinely appropriate.
+
+Copy should feel like a real student fellowship.
+
+Keep paragraphs readable.
+
+Use concise headings.
+
+Avoid huge walls of text.
+
+============================================================
+59. DESIGN ANTI-PATTERNS
+============================================================
+
+DO NOT:
+
+- use generic stock images
+- use Inter
+- overuse rounded cards
+- overuse glassmorphism
+- overuse shadows
+- make everything forest green
+- make everything dark
+- use bright yellow gold
+- use excessive gold
+- animate everything
+- create a huge homepage
+- create unnecessary pages
+- create unnecessary backend services
+- expose API keys
+- create public admin signup
+- hardcode dynamic event data
+- hardcode donation information in multiple places
+- scatter image paths throughout the project
+- invent organizational facts
+- use fake social media URLs
+- use fake bank details
+- create unnecessary complexity
+
+============================================================
+60. DEVELOPMENT PROCESS
+============================================================
+
+Follow this implementation order.
+
+PHASE 1 — PROJECT INSPECTION
+
+Before writing substantial code:
+
+1. Inspect the existing project.
+2. Inspect package.json.
+3. Inspect existing Next.js configuration.
+4. Inspect Tailwind configuration.
+5. Inspect shadcn configuration.
+6. Inspect provided image/assets directory.
+7. Inspect content.txt.
+8. Understand existing files before replacing anything.
+
+Do not blindly overwrite an existing project.
+
+============================================================
+
+PHASE 2 — FOUNDATION
+
+Establish:
+
+- typography
+- colors
+- CSS variables
+- spacing
+- border radius
+- layout containers
+- responsive rules
+- global styles
+- reusable UI primitives
+
+============================================================
+
+PHASE 3 — DATA / CONFIGURATION
+
+Create centralized configuration for:
+
+- organization name
+- theme
+- contact information
+- social links
+- donation information
+- static content
+- image references
+
+============================================================
+
+PHASE 4 — PUBLIC UI
+
+Build:
+
+- navbar
+- mobile navigation
+- footer
+- homepage
+- about
+- events
+- units
+- gallery
+- resources/sermons if supported by provided content
+
+============================================================
+
+PHASE 5 — SUPABASE
+
+Configure:
+
+- authentication
+- events table
+- storage
+- appropriate policies
+- server-side access
+
+============================================================
+
+PHASE 6 — ADMIN
+
+Build:
+
+- admin login
+- protected dashboard
+- event listing
+- event creation
+- event editing
+- event deletion
+- publishing controls
+- image upload
+
+============================================================
+
+PHASE 7 — CONTACT / BREVO
+
+Implement:
+
+- contact form
+- Zod validation
+- server-side validation
+- rate limiting
+- Brevo integration
+- admin email
+- visitor confirmation email
+
+============================================================
+
+PHASE 8 — DONATION
+
+Implement:
+
+- Donate CTA
+- shadcn Dialog
+- bank/payment details
+- copy-to-clipboard
+- donor instructions
+
+============================================================
+
+PHASE 9 — SEO / ACCESSIBILITY
+
+Implement:
+
+- metadata
+- Open Graph
+- sitemap
+- robots
+- JSON-LD
+- accessibility
+- semantic HTML
+- llms.txt where appropriate
+
+============================================================
+
+PHASE 10 — POLISH
+
+Review:
+
+- spacing
+- typography
+- mobile layout
+- tablet layout
+- desktop layout
+- Bento grids
+- image cropping
+- animation timing
+- loading states
+- empty states
+- error states
+- hover states
+- focus states
+
+============================================================
+61. TESTING
+============================================================
+
+Before considering the project complete:
+
+Run appropriate checks.
+
+At minimum:
+
+- TypeScript check
+- ESLint
+- production build
+- form validation tests where appropriate
+- admin access tests
+- contact API tests
+- event CRUD tests
+- responsive inspection
+
+Fix all build errors.
+
+Do not declare success while known TypeScript/build errors remain.
+
+============================================================
+62. ADMIN SECURITY CHECKLIST
+============================================================
+
+Verify:
+
+[ ] No public admin signup
+[ ] Admin routes protected
+[ ] Logout works
+[ ] Unauthorized users cannot manage events
+[ ] Supabase service credentials are not exposed
+[ ] Brevo API key is server-side only
+[ ] Event inputs validated
+[ ] File uploads validated
+[ ] Delete operation requires confirmation
+[ ] Contact endpoint rate limited
+[ ] Contact input validated server-side
+
+============================================================
+63. CONTACT SECURITY CHECKLIST
+============================================================
+
+Verify:
+
+[ ] Zod validation
+[ ] server-side validation
+[ ] rate limiting
+[ ] reasonable payload limits
+[ ] safe error messages
+[ ] no API key exposure
+[ ] no arbitrary HTML injection
+[ ] successful email delivery handling
+[ ] failed email handling
+[ ] visitor confirmation only after appropriate processing
+
+============================================================
+64. RESPONSIVE CHECKLIST
+============================================================
+
+Verify at:
+
+- 320px+
+- 375px+
+- 390px+
+- 414px+
+- tablet
+- 1024px
+- 1280px
+- 1440px
+- 1920px
+
+Check:
+
+- navigation
+- hero
+- Bento grids
+- events
+- units
+- gallery
+- donation modal
+- contact form
+- footer
+- admin dashboard
+
+============================================================
+65. FINAL QUALITY STANDARD
+============================================================
+
+The finished website should look like a professionally designed
+university fellowship website.
+
+It should NOT look like:
+
+"AI generated a church website."
+
+The design should have intentionality.
+
+Every section should have a reason to exist.
+
+Every color should have a purpose.
+
+Every animation should have a purpose.
+
+Every image should have a purpose.
+
+Whitespace should be used deliberately.
+
+Typography should carry significant visual identity.
+
+============================================================
+66. DEFINITION OF DONE
+============================================================
+
+The project is complete only when:
+
+[ ] Website runs successfully
+[ ] Production build succeeds
+[ ] TypeScript passes
+[ ] ESLint passes
+[ ] Mobile responsive
+[ ] Tablet responsive
+[ ] Desktop responsive
+[ ] Bento grids implemented throughout appropriate sections
+[ ] shadcn/ui used
+[ ] Zod implemented
+[ ] React Hook Form implemented
+[ ] Framer Motion implemented subtly
+[ ] Lucide icons used
+[ ] No Inter font
+[ ] Forest green primary palette implemented
+[ ] White used as primary supporting color
+[ ] Sophisticated muted gold used as accent
+[ ] Supplied local images used
+[ ] images.ts created and used
+[ ] No external stock images
+[ ] Static content centralized
+[ ] Donation modal works
+[ ] Copy-to-clipboard works
+[ ] Contact form works
+[ ] Contact form has server-side Zod validation
+[ ] Contact form has rate limiting
+[ ] Brevo integration implemented
+[ ] Visitor confirmation email implemented
+[ ] Admin receives contact emails
+[ ] Supabase authentication implemented
+[ ] No public admin signup
+[ ] Admin login works
+[ ] Admin logout works
+[ ] Admin routes protected
+[ ] Admin can create events
+[ ] Admin can edit events
+[ ] Admin can delete events
+[ ] Admin can publish/unpublish events
+[ ] Event images supported
+[ ] Unpublished events hidden publicly
+[ ] SEO implemented
+[ ] Open Graph implemented
+[ ] Sitemap implemented
+[ ] robots.txt implemented
+[ ] JSON-LD implemented where appropriate
+[ ] Agent/LLM discoverability considered
+[ ] Accessibility reviewed
+[ ] Reduced-motion support considered
+[ ] Loading states implemented
+[ ] Empty states implemented
+[ ] Error states implemented
+[ ] No secrets committed
+[ ] .env.example created
+[ ] No fake organizational information
+[ ] No fake social URLs
+[ ] No fake payment information
+[ ] No obvious console errors
+[ ] No horizontal overflow
+[ ] No unnecessary dependencies
+[ ] No unnecessary complexity
+
+============================================================
+67. IMPORTANT EXECUTION RULE
+============================================================
+
+Do not attempt to complete the entire application in one giant,
+unverified operation.
+
+Work systematically.
+
+After each major phase:
+
+1. inspect the result
+2. run appropriate checks
+3. fix issues
+4. continue
+
+If an existing implementation conflicts with these requirements,
+prefer the requirements in this document unless the project owner has
+explicitly provided a newer instruction.
+
+When uncertain about organizational facts, DO NOT INVENT THEM.
+
+When uncertain about design, prefer:
+
+clean
+subtle
+natural
+editorial
+modern
+welcoming
+
+over:
+
+loud
+dark
+flashy
+over-animated
+generic
+
+The final result should feel like TACSFON has a distinct visual
+identity—not like a template with the organization name replaced.
+============================================================
+END OF SPECIFICATION
+============================================================
