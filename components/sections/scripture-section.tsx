@@ -1,4 +1,4 @@
-﻿import { BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 export function ScriptureSection() {
   return (
@@ -12,7 +12,7 @@ export function ScriptureSection() {
         </div>
 
         <blockquote className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal leading-relaxed text-forest-50 italic">
-          "Let no man despise thy youth; but be thou an example of the believers, in word, in conversation, in charity, in spirit, in faith, in purity."
+          &quot;Let no man despise thy youth; but be thou an example of the believers, in word, in conversation, in charity, in spirit, in faith, in purity.&quot;
         </blockquote>
 
         <div className="pt-2">

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -50,7 +50,7 @@ export function Navbar() {
               TACSFON
             </span>
             <span className="text-[11px] font-semibold tracking-wider uppercase text-gold-600">
-              OAUSTECH Chapter
+              {fellowshipContent.identity.chapter.split(",")[0]}
             </span>
           </div>
         </Link>

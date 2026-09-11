@@ -1,16 +1,13 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { fellowshipContent } from "@/data/content";
 import { images } from "@/data/images";
 import {
   Shield,
   Heart,
-  BookOpen,
   Sparkles,
   Users,
   Building,
-  GraduationCap,
-  Flame,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -91,13 +88,13 @@ export default function AboutPage() {
                 Theme of the Season
               </span>
               <h3 className="font-serif text-2xl font-bold text-white">
-                "{identity.yearlyTheme}"
+                &quot;{identity.yearlyTheme}&quot;
               </h3>
               <p className="text-sm text-forest-200/85 leading-relaxed">
                 {identity.yearlyThemeSub}
               </p>
               <div className="p-3.5 rounded-xl bg-forest-950/70 border border-forest-800 text-xs text-forest-200 italic font-serif mt-4">
-                "Let no man despise thy youth; but be thou an example of the believers, in word, in conversation, in charity, in spirit, in faith, in purity." — 1 Tim 4:12
+                &quot;Let no man despise thy youth; but be thou an example of the believers, in word, in conversation, in charity, in spirit, in faith, in purity.&quot; — 1 Tim 4:12
               </div>
             </div>
 

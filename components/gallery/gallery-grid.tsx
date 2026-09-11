@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import Image from "next/image";
 import { images } from "@/data/images";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ZoomIn, Video, Image as ImageIcon } from "lucide-react";
+import { ZoomIn, Video } from "lucide-react";
 
 interface GalleryItem {
   id: string;
@@ -72,6 +72,46 @@ export function GalleryGrid() {
       title: "Listening & Growing in Truth",
       category: "Sunday Service",
       src: images.photography.listeningService,
+      type: "image",
+      span: "md:col-span-6 aspect-16/10",
+    },
+    {
+      id: "gal-8",
+      title: "Intimate Worship & Surrender",
+      category: "Worship & Devotion",
+      src: images.photography.intimateWorship,
+      type: "image",
+      span: "md:col-span-4 aspect-4/5",
+    },
+    {
+      id: "gal-9",
+      title: "Fervent Prayer Atmosphere",
+      category: "Prayer Meeting",
+      src: images.photography.reverencePrayer,
+      type: "image",
+      span: "md:col-span-4 aspect-4/5",
+    },
+    {
+      id: "gal-10",
+      title: "Studious Discipleship Session",
+      category: "Bible Study",
+      src: images.photography.studiousGathering,
+      type: "image",
+      span: "md:col-span-4 aspect-4/5",
+    },
+    {
+      id: "gal-11",
+      title: "Unity and Fellowship Bonding",
+      category: "Community Life",
+      src: images.photography.communityBond,
+      type: "image",
+      span: "md:col-span-6 aspect-16/10",
+    },
+    {
+      id: "gal-12",
+      title: "Celebration & Joyful Worship",
+      category: "Fellowship Sunday",
+      src: images.photography.celebrationWorship,
       type: "image",
       span: "md:col-span-6 aspect-16/10",
     },

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -12,18 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import {
-  Upload,
-  Loader2,
-  Calendar,
-  Clock,
-  MapPin,
-  Tag,
-  Link as LinkIcon,
-  Eye,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 
 interface EventFormProps {
   initialData?: FellowshipEvent;
@@ -42,7 +31,6 @@ export function EventForm({ initialData, isEdit = false }: EventFormProps) {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -60,8 +48,6 @@ export function EventForm({ initialData, isEdit = false }: EventFormProps) {
       published: initialData?.published !== undefined ? initialData.published : true,
     },
   });
-
-  const publishedValue = watch("published");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -323,8 +309,7 @@ export function EventForm({ initialData, isEdit = false }: EventFormProps) {
             <input
               type="checkbox"
               id="published-toggle"
-              checked={publishedValue}
-              onChange={(e) => setValue("published", e.target.checked)}
+              {...register("published")}
               className="sr-only peer"
             />
             <div className="w-11 h-6 bg-forest-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-forest-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-forest-800" />

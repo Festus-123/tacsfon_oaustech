@@ -1,6 +1,6 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { DonationModal } from "@/components/donation/donation-modal";
-import { MapPin, Heart, ArrowRight } from "lucide-react";
+import { Heart, ArrowRight } from "lucide-react";
 
 export function HomeCta() {
   return (

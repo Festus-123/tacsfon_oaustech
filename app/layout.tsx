@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navigation/navbar";
@@ -71,6 +71,34 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "TACSFON (OAUSTECH)",
+  alternateName: "The Apostolic Church Student Fellowship of Nigeria, OAUSTECH Chapter",
+  url: "https://tacsfon-oaustech.org",
+  logo: "https://tacsfon-oaustech.org/assets/Dofoto_20250506_103614466.png",
+  sameAs: [
+    "https://instagram.com/tacsfon_oaustech",
+    "https://facebook.com/tacsfon_oaustech",
+    "https://tiktok.com/@tacsfon_oaustech",
+    "https://x.com/tacsfon_oaustech",
+  ],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Igodan Methodist Primary School",
+    addressLocality: "Okitipupa",
+    addressRegion: "Ondo State",
+    addressCountry: "NG",
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+234-914-080-9527",
+    contactType: "fellowship inquiries",
+    email: "festusphillip19@gmail.com",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -81,6 +109,12 @@ export default function RootLayout({
       lang="en"
       className={`${serifFont.variable} ${sansFont.variable} h-full antialiased scroll-smooth`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-canvas text-ink font-sans">
         <Navbar />
         <main className="flex-1">{children}</main>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -186,7 +186,7 @@ export function EventList({ initialEvents }: EventListProps) {
           </div>
         ) : (
           <div className="p-12 text-center text-forest-700">
-            <p className="text-sm">No events found. Click "Create New Event" to get started.</p>
+            <p className="text-sm">No events found. Click &quot;Create New Event&quot; to get started.</p>
           </div>
         )}
       </div>

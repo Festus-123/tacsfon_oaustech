@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -25,7 +25,7 @@ export function Hero() {
                 Current Yearly Theme:
               </span>
               <span className="font-serif text-xs font-bold text-gold-700">
-                "{fellowshipContent.identity.yearlyTheme}"
+                &quot;{fellowshipContent.identity.yearlyTheme}&quot;
               </span>
             </div>
 
@@ -102,7 +102,7 @@ export function Hero() {
                     </span>
                   </div>
                   <p className="font-serif text-lg font-bold text-white leading-snug">
-                    "Let no man despise thy youth..."
+                    &quot;Let no man despise thy youth...&quot;
                   </p>
                   <p className="text-xs text-forest-100/80">
                     1 Timothy 4:12 — Grounded in faith, word & purity.

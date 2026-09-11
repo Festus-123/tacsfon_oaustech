@@ -1,4 +1,4 @@
-﻿"use clinet"
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +15,7 @@ import {
   Heart,
   Lock,
 } from "lucide-react";
-import { SiX, SiFacebook, SiInstagram } from "react-icons/si"
+import { SiX, SiFacebook, SiInstagram, SiTiktok } from "react-icons/si";
 
 export function Footer() {
   return (
@@ -137,9 +137,7 @@ export function Footer() {
                     {s.icon === "instagram" && <SiInstagram className="h-3.5 w-3.5 text-pink-400" />}
                     {s.icon === "facebook" && <SiFacebook className="h-3.5 w-3.5 text-blue-400" />}
                     {s.icon === "x" && <SiX className="h-3.5 w-3.5 text-cyan-400" />}
-                    {s.icon === "tiktok" && (
-                      <span className="font-bold text-xs text-emerald-400">TT</span>
-                    )}
+                    {s.icon === "tiktok" && <SiTiktok className="h-3.5 w-3.5 text-rose-400" />}
                     <span>{s.name}</span>
                   </a>
                 ))}

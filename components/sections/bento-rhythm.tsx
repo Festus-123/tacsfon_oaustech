@@ -1,7 +1,5 @@
-﻿import Link from "next/link";
-import Image from "next/image";
-import { images } from "@/data/images";
-import { Clock, MapPin, Sparkles, BookOpen, Flame, Music, Moon, Send, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Clock, MapPin, Sparkles, BookOpen, Flame, Music, Moon, ArrowRight } from "lucide-react";
 
 export function BentoRhythm() {
   return (

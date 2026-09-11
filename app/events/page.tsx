@@ -1,7 +1,7 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { getPublicEvents } from "@/lib/supabase/events";
 import { EventCard } from "@/components/events/event-card";
-import { Calendar, Sparkles, MapPin } from "lucide-react";
+import { Calendar, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Events & Programmes",

@@ -53,7 +53,7 @@ export const eventSchema = z.object({
     .optional()
     .or(z.literal("")),
   category: z.string().trim().max(60).optional().or(z.literal("")),
-  published: z.boolean().default(true),
+  published: z.boolean(),
 });
 
 export type EventFormData = z.infer<typeof eventSchema>;

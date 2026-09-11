@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { images } from "@/data/images";
 import { Button } from "@/components/ui/button";
-import { LogOut, Globe, Shield, Calendar, Plus } from "lucide-react";
+import { LogOut, Globe, Calendar, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 export function AdminNav({ userEmail }: { userEmail?: string }) {

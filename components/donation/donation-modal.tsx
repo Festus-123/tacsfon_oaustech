@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { donationConfig } from "@/data/donation";
-import { Check, Copy, Heart, Building2, Sparkles } from "lucide-react";
+import { Check, Copy, Heart, Sparkles } from "lucide-react";
 
 interface DonationModalProps {
   trigger?: React.ReactNode;
@@ -224,7 +224,7 @@ export function DonationModal({ trigger, open, onOpenChange }: DonationModalProp
 
         <div className="text-center pt-1 border-t border-forest-800/10">
           <p className="text-xs text-forest-800/70 italic font-serif">
-            "Every man according as he purposeth in his heart, so let him give..." — 2 Cor 9:7
+            &quot;Every man according as he purposeth in his heart, so let him give...&quot; — 2 Cor 9:7
           </p>
         </div>
       </DialogContent>

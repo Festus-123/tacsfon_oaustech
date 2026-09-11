@@ -1,9 +1,13 @@
-﻿import { createClient } from "./server";
+import { createClient } from "./server";
+import { createPublicClient } from "./client";
 import { initialEvents, FellowshipEvent } from "@/data/events";
 
 export async function getPublicEvents(): Promise<FellowshipEvent[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
+    if (!supabase) {
+      return initialEvents.filter((e) => e.published);
+    }
     const { data, error } = await supabase
       .from("events")
       .select("*")

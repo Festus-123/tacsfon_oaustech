@@ -1,7 +1,7 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { eventSchema } from "@/lib/validation/schemas";
-import { initialEvents, FellowshipEvent } from "@/data/events";
+import { initialEvents } from "@/data/events";
 
 export async function GET() {
   try {

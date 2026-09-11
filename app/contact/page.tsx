@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { fellowshipContent } from "@/data/content";
 import { socialLinks } from "@/data/social";
 import { ContactForm } from "@/components/forms/contact-form";
@@ -12,7 +12,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-import { SiX, SiFacebook, SiInstagram } from "react-icons/si"
+import { SiX, SiFacebook, SiInstagram, SiTiktok } from "react-icons/si";
 
 
 export const metadata: Metadata = {
@@ -139,9 +139,7 @@ export default function ContactPage() {
                     {s.icon === "instagram" && <SiInstagram className="h-4 w-4 text-pink-500" />}
                     {s.icon === "facebook" && <SiFacebook className="h-4 w-4 text-blue-600" />}
                     {s.icon === "x" && <SiX className="h-4 w-4 text-slate-800" />}
-                    {s.icon === "tiktok" && (
-                      <span className="font-bold text-xs text-emerald-600">TT</span>
-                    )}
+                    {s.icon === "tiktok" && <SiTiktok className="h-4 w-4 text-rose-500" />}
                     <span>{s.name}</span>
                   </a>
                 ))}
