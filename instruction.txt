@@ -1849,12 +1849,39 @@ Every image should have a purpose.
 Whitespace should be used deliberately.
 
 Typography should carry significant visual identity.
-
 ============================================================
 66. DEFINITION OF DONE
 ============================================================
 
-The project is complete only when:
+IMPORTANT:
+
+The project is already under active implementation.
+
+DO NOT rebuild, restructure, or replace working parts of the existing
+application merely because this specification contains requirements
+that have already been implemented.
+
+Before making changes:
+
+1. Inspect the current implementation.
+2. Identify what is already complete.
+3. Preserve working architecture and components.
+4. Reuse existing patterns, components, utilities, authentication,
+   Supabase setup, styling and configuration where appropriate.
+5. Only modify existing functionality when required to integrate the
+   new programme payment system or fix an actual issue.
+6. Do not duplicate functionality that already exists.
+
+The remaining major feature to implement is:
+
+PROGRAMME PAYMENT / REGISTRATION SYSTEM
+
+After implementing the payment system, the entire application must
+satisfy the following final checklist.
+
+------------------------------------------------------------
+PUBLIC WEBSITE
+------------------------------------------------------------
 
 [ ] Website runs successfully
 [ ] Production build succeeds
@@ -1863,101 +1890,2177 @@ The project is complete only when:
 [ ] Mobile responsive
 [ ] Tablet responsive
 [ ] Desktop responsive
-[ ] Bento grids implemented throughout appropriate sections
-[ ] shadcn/ui used
-[ ] Zod implemented
-[ ] React Hook Form implemented
-[ ] Framer Motion implemented subtly
-[ ] Lucide icons used
+[ ] Existing public pages remain functional
+[ ] Existing navigation remains functional
+[ ] Existing Bento layouts remain functional
+[ ] Existing local image system remains functional
+[ ] No external stock images introduced
+[ ] No fake organizational information introduced
+[ ] No fake social URLs introduced
+[ ] No fake payment information introduced
+[ ] No obvious console errors
+[ ] No horizontal overflow
+[ ] Loading states implemented where required
+[ ] Empty states implemented where required
+[ ] Error states implemented where required
+
+------------------------------------------------------------
+DESIGN / UI
+------------------------------------------------------------
+
+[ ] Existing visual system is preserved
+[ ] Forest green remains the primary color
+[ ] White remains the primary supporting color
+[ ] Muted/sophisticated gold remains an accent
 [ ] No Inter font
-[ ] Forest green primary palette implemented
-[ ] White used as primary supporting color
-[ ] Sophisticated muted gold used as accent
-[ ] Supplied local images used
-[ ] images.ts created and used
-[ ] No external stock images
-[ ] Static content centralized
-[ ] Donation modal works
-[ ] Copy-to-clipboard works
+[ ] shadcn/ui remains integrated
+[ ] Framer Motion remains subtle
+[ ] Lucide icons used where appropriate
+[ ] Existing responsive behavior remains intact
+[ ] Existing accessibility behavior remains intact
+
+------------------------------------------------------------
+CONTACT
+------------------------------------------------------------
+
 [ ] Contact form works
-[ ] Contact form has server-side Zod validation
-[ ] Contact form has rate limiting
-[ ] Brevo integration implemented
-[ ] Visitor confirmation email implemented
+[ ] React Hook Form implemented
+[ ] Zod validation implemented
+[ ] Server-side validation implemented
+[ ] Rate limiting implemented
+[ ] Brevo integration works
 [ ] Admin receives contact emails
-[ ] Supabase authentication implemented
+[ ] Visitor confirmation email works
+[ ] Brevo credentials remain server-side
+[ ] Contact failures return safe user-facing messages
+
+------------------------------------------------------------
+DONATION
+------------------------------------------------------------
+
+[ ] Donate CTA works
+[ ] Donation modal works
+[ ] shadcn Dialog used
+[ ] Donation information is centralized
+[ ] Copy-to-clipboard works
+[ ] Copy feedback works
+[ ] No hardcoded duplicate donation information
+[ ] Donation system remains separate from programme payments
+
+------------------------------------------------------------
+AUTHENTICATION / ADMIN
+------------------------------------------------------------
+
+[ ] Supabase authentication works
 [ ] No public admin signup
 [ ] Admin login works
 [ ] Admin logout works
-[ ] Admin routes protected
+[ ] Admin routes are protected
+[ ] Unauthorized users cannot access admin functionality
+[ ] Supabase service-role credentials are not exposed
+[ ] Existing event management continues to work
 [ ] Admin can create events
 [ ] Admin can edit events
 [ ] Admin can delete events
 [ ] Admin can publish/unpublish events
-[ ] Event images supported
-[ ] Unpublished events hidden publicly
-[ ] SEO implemented
-[ ] Open Graph implemented
-[ ] Sitemap implemented
-[ ] robots.txt implemented
-[ ] JSON-LD implemented where appropriate
-[ ] Agent/LLM discoverability considered
-[ ] Accessibility reviewed
-[ ] Reduced-motion support considered
-[ ] Loading states implemented
-[ ] Empty states implemented
-[ ] Error states implemented
-[ ] No secrets committed
-[ ] .env.example created
-[ ] No fake organizational information
-[ ] No fake social URLs
-[ ] No fake payment information
-[ ] No obvious console errors
-[ ] No horizontal overflow
-[ ] No unnecessary dependencies
-[ ] No unnecessary complexity
+[ ] Event images continue to work
+[ ] Unpublished events remain hidden publicly
+
+------------------------------------------------------------
+PROGRAMME PAYMENT SYSTEM
+------------------------------------------------------------
+
+[ ] Admin can create a programme payment request
+[ ] Payment request has a unique UUID
+[ ] UUID is URL-safe
+[ ] UUID is used internally/publicly as the unique payment URL identifier
+[ ] No unsafe '#' reference code is used in the URL
+[ ] No separate human-readable payment reference code is required
+
+Each payment request must support:
+
+[ ] Programme name
+[ ] Programme date
+[ ] Description/instructions
+[ ] Amount per person
+[ ] Bank name
+[ ] Account name
+[ ] Account number
+[ ] Optional programme image/flyer where appropriate
+[ ] Created timestamp
+[ ] Expiration timestamp
+[ ] Status
+
+The system must automatically set:
+
+expires_at = created_at + 24 hours
+
+The browser must NOT be responsible for determining whether a payment
+request is expired.
+
+The server/database must enforce the 24-hour expiration.
+
+------------------------------------------------------------
+PAYMENT REQUEST STATUS
+------------------------------------------------------------
+
+Supported statuses:
+
+ACTIVE
+CLOSED
+EXPIRED
+
+ACTIVE:
+Visitors can open the payment page and submit registrations.
+
+CLOSED:
+The administrator has manually stopped the payment request.
+
+EXPIRED:
+24 hours have elapsed since creation.
+
+Expired payment requests must no longer accept new submissions.
+
+Do NOT automatically destroy historical records merely because a request
+expires.
+
+Historical registrations must remain available to authorized
+administrators.
+
+------------------------------------------------------------
+ADMIN PAYMENT CREATION
+------------------------------------------------------------
+
+Admin route:
+
+/admin/payments
+
+Admin should be able to:
+
+[ ] View payment requests
+[ ] Create payment request
+[ ] View payment request
+[ ] Close payment request
+[ ] Delete payment request
+[ ] View registrations
+[ ] View registered names
+[ ] Export registered names
+[ ] Open public payment page
+[ ] Copy public payment URL
+[ ] View generated QR code
+[ ] Download generated QR code
+
+IMPORTANT:
+
+An existing payment request MUST NOT be editable.
+
+If the administrator entered incorrect:
+
+- amount
+- bank details
+- account details
+- programme name
+- programme date
+- instructions
+
+the administrator must close/delete the old request and create a new
+payment request.
+
+This guarantees that an old QR code or URL cannot continue displaying
+outdated payment information.
+
+Deleting a payment request must require confirmation.
+
+------------------------------------------------------------
+QR CODE
+------------------------------------------------------------
+
+A QR code must be generated automatically when a payment request is
+created.
+
+The QR code must encode the unique public payment URL.
+
+Example concept:
+
+https://site.com/pay/<uuid>
+
+Do NOT encode sensitive information directly into the QR code.
+
+The QR code should simply point to the public payment page.
+
+Admin must be able to:
+
+[ ] View QR
+[ ] Download QR
+[ ] Copy payment URL
+[ ] Open payment page
+
+------------------------------------------------------------
+PUBLIC PAYMENT PAGE
+------------------------------------------------------------
+
+Create a public route similar to:
+
+/pay/[paymentId]
+
+The page must be mobile-first because users will commonly access it
+after scanning a QR code.
+
+The page should display:
+
+[ ] Programme name
+[ ] Programme date
+[ ] Description/instructions
+[ ] Amount per person
+[ ] Bank name
+[ ] Account name
+[ ] Account number
+[ ] Copy buttons for payment details
+[ ] Expiration information/countdown
+[ ] Number of people selector
+[ ] Name fields
+[ ] Automatically calculated total amount
+[ ] Payment instructions
+[ ] "Payment Completed" submission action
+[ ] List of completed/registered names
+
+Do not require account creation from public users.
+
+------------------------------------------------------------
+MULTIPLE-PERSON REGISTRATION
+------------------------------------------------------------
+
+A visitor must be able to register multiple people in one submission.
+
+Example:
+
+Number of people: 3
+
+Name 1: John Doe
+Name 2: Jane Doe
+Name 3: Peter Doe
+
+The system calculates:
+
+total_amount =
+amount_per_person × number_of_people
+
+The client must NOT be trusted with the final amount.
+
+The server must retrieve the authoritative amount-per-person from the
+payment request and calculate the final amount itself.
+
+Do not allow the client to submit an arbitrary total amount.
+
+------------------------------------------------------------
+NAME VALIDATION
+------------------------------------------------------------
+
+Names must be validated server-side.
+
+Within one submission:
+
+[ ] Names must not be empty
+[ ] Names must be normalized/trimmed
+[ ] Duplicate names within the same submission must be rejected
+[ ] Reasonable name length limits must be enforced
+
+The same person/name may appear in different submissions for the same
+programme.
+
+Do NOT globally reject a name merely because it already appears in
+another submission.
+
+------------------------------------------------------------
+PAYMENT CONFIRMATION FLOW
+------------------------------------------------------------
+
+This is a MANUAL BANK TRANSFER system.
+
+There is NO automated payment gateway.
+
+Do NOT integrate:
+
+- Paystack
+- Flutterwave
+- Stripe
+- bank APIs
+- payment verification APIs
+
+unless explicitly requested later.
+
+The flow is:
+
+Visitor
+  ↓
+Opens unique payment URL
+  ↓
+Selects number of people
+  ↓
+Enters names
+  ↓
+System calculates total
+  ↓
+Visitor copies bank details
+  ↓
+Visitor makes bank transfer manually
+  ↓
+Visitor clicks "Payment Completed"
+  ↓
+Registration is submitted
+  ↓
+Names become visible on the public payment page
+  ↓
+Admin can view/export registrations
+
+The interface must clearly communicate that clicking
+"Payment Completed" means the visitor is confirming that they have
+made the transfer.
+
+Do not claim that the system automatically verified the bank transfer.
+
+------------------------------------------------------------
+PUBLIC REGISTERED NAMES
+------------------------------------------------------------
+
+After a successful submission, the registered names must become
+visible on the public payment page.
+
+Display names only.
+
+Do NOT expose publicly:
+
+- email addresses
+- phone numbers
+- internal UUIDs
+- admin information
+- database IDs
+- internal metadata
+- sensitive payment information beyond the intended payment details
+
+The public list can communicate something simple such as:
+
+Registered Participants
+
+- John Doe
+- Jane Doe
+- Peter Doe
+
+The 24-hour payment window provides the intended temporary context
+for this public registration list.
+
+------------------------------------------------------------
+PAYMENT DATABASE
+------------------------------------------------------------
+
+Use Supabase PostgreSQL.
+
+Keep the schema simple.
+
+Recommended structure:
+
+payment_requests
+
+- id UUID primary key
+- programme_name
+- programme_date
+- description
+- amount_per_person
+- bank_name
+- account_name
+- account_number
+- payment_instructions
+- image_url/storage_reference if needed
+- status
+- created_at
+- expires_at
+- closed_at
+
+payment_submissions
+
+- id UUID primary key
+- payment_request_id
+- total_people
+- amount_per_person_snapshot
+- total_amount
+- created_at
+- completed_at
+
+payment_submission_people
+
+- id UUID primary key
+- submission_id
+- name
+- created_at
+
+Use foreign keys and appropriate indexes.
+
+The amount_per_person_snapshot is important because historical
+registrations must retain the amount used when the submission was
+created.
+
+------------------------------------------------------------
+PAYMENT SECURITY
+------------------------------------------------------------
+
+[ ] Payment requests are validated with Zod
+[ ] Public submission input is validated server-side
+[ ] Number of people has reasonable limits
+[ ] Names have reasonable length limits
+[ ] Total amount is calculated server-side
+[ ] Client cannot override amount-per-person
+[ ] Client cannot override payment request ownership/data
+[ ] Expired requests reject submissions
+[ ] Closed requests reject submissions
+[ ] Deleted requests cannot receive submissions
+[ ] Public users cannot edit existing registrations
+[ ] Public users cannot modify payment requests
+[ ] Public users cannot access admin data
+[ ] Internal database IDs are not unnecessarily exposed
+[ ] Sensitive credentials remain server-side
+[ ] Rate limiting/abuse protection is applied to the public submission
+    endpoint
+[ ] Safe error messages are returned
+
+------------------------------------------------------------
+PAYMENT RLS / SUPABASE SECURITY
+------------------------------------------------------------
+
+Implement appropriate Row Level Security.
+
+Public users may only access the minimum information necessary to:
+
+- view an active payment request
+- view its public completed names
+- submit a registration to an active payment request
+
+Public users must NOT be able to:
+
+- create payment requests
+- edit payment requests
+- delete payment requests
+- close payment requests
+- edit existing submissions
+- delete registrations
+- access admin-only payment information
+
+Authenticated authorized administrators may:
+
+- create payment requests
+- view payment requests
+- close payment requests
+- delete payment requests
+- view registrations
+- export registrations
+
+Do not bypass security merely because the page is hidden from navigation.
+
+------------------------------------------------------------
+PAYMENT ADMIN UX
+------------------------------------------------------------
+
+The payment dashboard should remain lightweight.
+
+Do NOT build a complicated payment analytics dashboard.
+
+The admin should easily understand:
+
+- programme
+- programme date
+- status
+- creation time
+- expiration time
+- number of registered people
+- registration list
+
+IMPORTANT:
+
+DO NOT DISPLAY AN "EXPECTED AMOUNT" OR EXPECTED REVENUE FIELD.
+
+The admin only needs the registration information and the configured
+amount-per-person where useful.
+
+------------------------------------------------------------
+EXPORT
+------------------------------------------------------------
+
+Admin must be able to export registered names.
+
+Primary export format:
+
+CSV
+
+Each registered person should appear as a separate row.
+
+Example columns:
+
+Name
+Programme
+Programme Date
+Amount Per Person
+Total Submission Amount
+Submission Time
+
+Do NOT export unnecessary sensitive information.
+
+The export must work for a selected payment request.
+
+Excel-compatible CSV is sufficient.
+
+Do not add a complex spreadsheet system.
+
+------------------------------------------------------------
+EXPIRATION UX
+------------------------------------------------------------
+
+The public payment page should communicate the 24-hour validity period.
+
+A countdown may be displayed for user experience.
+
+However:
+
+The countdown is NOT the security mechanism.
+
+The server/database expiration timestamp is authoritative.
+
+When expired:
+
+[ ] New registrations are blocked
+[ ] Payment form is disabled
+[ ] Payment details are no longer presented as an active payment option
+[ ] Existing registered names remain available where appropriate
+[ ] User receives a clear expired/unavailable message
+
+Example:
+
+"This payment request is no longer active."
+
+Do not expose raw database errors.
+
+------------------------------------------------------------
+PAYMENT DATA LIFECYCLE
+------------------------------------------------------------
+
+Do not automatically delete payment records simply because they reach
+24 hours.
+
+The request becomes EXPIRED.
+
+Historical records remain available to authorized administrators for
+record keeping/export.
+
+If automatic cleanup is introduced later, it must be explicitly
+requested and must not silently destroy useful registration records.
+
+------------------------------------------------------------
+PAYMENT ROUTES
+------------------------------------------------------------
+
+Suggested routes:
+
+/pay/[paymentId]
+
+/admin/payments
+/admin/payments/[id]
+
+/admin/payments/new
+
+Additional routes may be implemented if the current architecture
+benefits from them.
+
+Do not create unnecessary routes.
+
+------------------------------------------------------------
+PAYMENT UX STATES
+------------------------------------------------------------
+
+Implement proper states for:
+
+[ ] Loading payment request
+[ ] Payment request found
+[ ] Payment request not found
+[ ] Payment request expired
+[ ] Payment request closed
+[ ] Registration form loading
+[ ] Registration submission
+[ ] Registration success
+[ ] Registration failure
+[ ] Admin payment creation
+[ ] Admin payment creation success
+[ ] Admin payment creation failure
+[ ] QR generation/loading
+[ ] Export loading
+[ ] Empty registration list
+
+User-facing messages must be clear and human.
+
+------------------------------------------------------------
+INTEGRATION REQUIREMENT
+------------------------------------------------------------
+
+The programme payment system must integrate naturally into the
+existing application.
+
+DO NOT:
+
+- redesign the entire website
+- replace the existing admin dashboard
+- replace the existing event system
+- replace the existing authentication system
+- introduce a second database
+- introduce an unnecessary Express backend
+- introduce a payment gateway
+- duplicate existing UI components
+- duplicate existing Supabase utilities
+- duplicate existing validation utilities
+- introduce unnecessary dependencies
+
+Reuse the project's existing:
+
+- Supabase client
+- authentication utilities
+- shadcn components
+- form patterns
+- Zod patterns
+- Tailwind tokens
+- layout components
+- admin layout
+- notification/toast system
+- error handling patterns
+
+where appropriate.
+
+------------------------------------------------------------
+ENVIRONMENT VARIABLES
+------------------------------------------------------------
+
+If QR generation or public URL construction requires an application
+URL, use an environment variable rather than hardcoding a deployment
+URL.
+
+Update:
+
+.env.example
+
+with placeholder values only.
+
+Never commit secrets.
+
+------------------------------------------------------------
+FINAL PAYMENT SYSTEM TEST
+------------------------------------------------------------
+
+Before declaring the payment system complete, manually verify this
+entire flow:
+
+1. Admin logs in.
+2. Admin creates a payment request.
+3. Programme name is saved.
+4. Programme date is saved.
+5. Amount per person is saved.
+6. Bank details are saved.
+7. Custom payment instructions are saved.
+8. Unique UUID is generated.
+9. Public URL is generated.
+10. QR code is generated.
+11. Admin can copy the URL.
+12. Admin can view/download the QR.
+13. Public URL opens successfully.
+14. Public page displays the correct programme.
+15. Public page displays the correct amount.
+16. Public page displays the correct bank details.
+17. Visitor selects multiple people.
+18. Name fields are generated correctly.
+19. Duplicate names in the same submission are rejected.
+20. Total amount is calculated correctly.
+21. Server recalculates the authoritative amount.
+22. Visitor submits after making payment.
+23. Submission succeeds.
+24. Registered names become publicly visible.
+25. Admin sees the registration.
+26. Admin can export the names.
+27. Closing the payment request blocks new submissions.
+28. A request older than 24 hours becomes expired.
+29. Expired requests block new submissions.
+30. Existing historical registrations remain preserved.
+31. Deleting a payment request requires confirmation.
+32. Deleted payment requests cannot accept submissions.
+33. Public users cannot access admin functionality.
+34. No sensitive admin/database information is exposed.
 
 ============================================================
-67. IMPORTANT EXECUTION RULE
+FINAL PROJECT DEFINITION OF DONE
 ============================================================
 
-Do not attempt to complete the entire application in one giant,
-unverified operation.
+The project is COMPLETE only when:
 
-Work systematically.
+[ ] Existing website implementation remains functional
+[ ] Existing public pages remain functional
+[ ] Existing event system remains functional
+[ ] Existing authentication remains functional
+[ ] Existing contact system remains functional
+[ ] Existing donation system remains functional
+[ ] Programme payment system is fully implemented
+[ ] Programme payment system is secure
+[ ] Programme payment system is mobile-friendly
+[ ] Programme payment system is integrated with Supabase
+[ ] Payment request UUID/URL generation works
+[ ] QR generation works
+[ ] 24-hour expiration works
+[ ] ACTIVE/CLOSED/EXPIRED states work
+[ ] Multiple-person registration works
+[ ] Name uniqueness within submissions works
+[ ] Server-side amount calculation works
+[ ] Manual payment confirmation flow works
+[ ] Public registered names work
+[ ] Admin registration management works
+[ ] CSV export works
+[ ] Payment RLS/security works
+[ ] Payment rate limiting/abuse protection works
+[ ] All important payment loading/error/empty/success states work
+[ ] No payment gateway has been introduced
+[ ] No unnecessary backend infrastructure has been introduced
+[ ] No duplicate architecture has been introduced
+[ ] TypeScript passes
+[ ] ESLint passes
+[ ] Production build succeeds
+[ ] No known blocking errors remain
+[ ] No secrets are committed
+[ ] .env.example is updated
+[ ] Responsive behavior has been verified
+[ ] Accessibility has been reviewed
+[ ] Final UI polish has been completed
 
-After each major phase:
-
-1. inspect the result
-2. run appropriate checks
-3. fix issues
-4. continue
-
-If an existing implementation conflicts with these requirements,
-prefer the requirements in this document unless the project owner has
-explicitly provided a newer instruction.
-
-When uncertain about organizational facts, DO NOT INVENT THEM.
-
-When uncertain about design, prefer:
-
-clean
-subtle
-natural
-editorial
-modern
-welcoming
-
-over:
-
-loud
-dark
-flashy
-over-animated
-generic
-
-The final result should feel like TACSFON has a distinct visual
-identity—not like a template with the organization name replaced.
+DO NOT DECLARE THE PROJECT COMPLETE UNTIL THE ABOVE CHECKLIST HAS
+BEEN VERIFIED.
 ============================================================
-END OF SPECIFICATION
-============================================================
+
+# ACADEMIC HUB — ADDITIVE FEATURE
+# ============================================================
+# IMPORTANT:
+# This section is an ADDITION to the existing TACSFON OAUSTECH
+# website. Do not rebuild, redesign, remove, or break existing
+# functionality.
+#
+# The Academic Hub is a separate product experience within the
+# existing project and should have its own visual identity.
+#
+# DO NOT IMPLEMENT THE EXTERNAL ACADEMIC MATERIAL SORTER HERE.
+#
+# The external sorter is a completely separate project/process.
+# This Next.js project only receives already-normalized files
+# through the Admin dashboard.
+# ============================================================
+
+
+## 67. ACADEMIC HUB — PRODUCT OVERVIEW
+
+Build a new academic materials platform called:
+
+    Academic Hub
+
+The connection to TACSFON OAUSTECH should be subtle.
+
+Do NOT make the Academic Hub visually look like the main TACSFON
+church website.
+
+The Academic Hub should feel like a modern academic/product
+platform with a clean editorial interface.
+
+Small contextual branding may be used:
+
+    TACSFON OAUSTECH
+
+and/or:
+
+    In partnership with TACSFON OAUSTECH
+
+Do not make TACSFON the dominant visual identity of the Academic
+Hub.
+
+The Academic Hub provides students with organized academic
+materials through a semester-based paid access system.
+
+Users who purchase access to an active semester receive access
+to all Academic Hub materials available for that semester.
+
+
+## 68. ACADEMIC HUB VISUAL DIRECTION
+
+The Academic Hub must have its own visual identity.
+
+Primary visual direction:
+
+    - Cream background
+    - ChatGPT-inspired blue as the dominant accent
+    - Very subtle/faint secondary blue
+    - White cards/surfaces where appropriate
+    - Clean typography
+    - Modern editorial/academic feel
+    - Spacious layouts
+    - Strong hierarchy
+    - Excellent mobile experience
+    - Subtle motion only
+
+Avoid:
+
+    - Dark premium SaaS aesthetics
+    - Excessive gradients
+    - Generic AI-dashboard appearance
+    - Excessive glassmorphism
+    - Loud colors
+    - Overly decorative church styling
+    - Unnecessary animation
+
+The Academic Hub should feel trustworthy, calm, organized and
+easy to navigate.
+
+
+## 69. ACADEMIC HUB MATERIAL TYPES
+
+Initial supported material types:
+
+    - Past Questions
+    - Manuals / Lecture Notes
+    - Workbooks
+    - Materials
+
+Do NOT create a Tutorials material category.
+
+Material types should be data-driven rather than hardcoded throughout
+the UI so additional types can be added later.
+
+
+## 70. ACADEMIC MATERIAL HIERARCHY
+
+The public Academic Hub should allow students to browse materials
+using the following hierarchy:
+
+    Material Type
+        ↓
+    Level
+        ↓
+    School
+        ↓
+    Department
+        ↓
+    Course
+        ↓
+    Academic Session / Semester
+
+Example:
+
+    Past Questions
+        ↓
+    300 Level
+        ↓
+    School of Science
+        ↓
+    Computer Science
+        ↓
+    CSC 308
+        ↓
+    2024/2025 — First Semester
+
+Do not rely on physical folder structure to determine this hierarchy.
+
+The database must store each metadata field independently.
+
+
+## 71. ACADEMIC HUB NAVIGATION
+
+The Academic Hub should provide an obvious top-level navigation/header
+for material categories.
+
+Example:
+
+    Academic Hub
+
+    [ Past Questions ]
+    [ Manuals & Lecture Notes ]
+    [ Workbooks ]
+    [ Materials ]
+
+The user then progressively filters/navigates through:
+
+    Level
+    School
+    Department
+    Course
+    Session / Semester
+
+The UI should remain clean and easy to understand on mobile.
+
+
+## 72. SCHOOL / DEPARTMENT / COURSE MANAGEMENT
+
+Do not assume the academic structure is permanent.
+
+OAUSTECH may:
+
+    - create departments
+    - rename departments
+    - remove departments
+    - introduce new courses
+    - rename courses
+    - change course availability
+
+Therefore:
+
+    Schools
+    Departments
+    Courses
+
+must be manageable from the Academic Hub Admin dashboard.
+
+Do NOT hardcode the complete academic structure into components.
+
+Admin should be able to:
+
+    - create
+    - edit
+    - deactivate
+    - reactivate
+
+schools, departments and courses where appropriate.
+
+Courses must be associated with their relevant department.
+
+Departments must be associated with their relevant school.
+
+Do not allow invalid relationships.
+
+
+## 73. SEMESTER / ACADEMIC SESSION SYSTEM
+
+Do NOT hardcode a "current semester" into the application.
+
+Admin must be able to create and manage academic access periods.
+
+An academic access period should contain at minimum:
+
+    - academic session
+    - semester name
+    - start date
+    - end date
+    - access price
+    - status
+    - description/instructions where necessary
+    - created_at
+    - updated_at
+
+Example:
+
+    Academic Session:
+        2026/2027
+
+    Semester:
+        First Semester
+
+    Start:
+        2026-10-12
+
+    End:
+        2027-01-11
+
+    Price:
+        Configured by Admin
+
+    Status:
+        ACTIVE
+
+The exact dates and price must come from Admin configuration.
+
+Never hardcode:
+
+    2026/2027
+    First Semester
+    13 weeks
+    any specific price
+
+into application logic.
+
+A semester may normally represent approximately 13 weeks, but
+access must be controlled by the configured start/end dates.
+
+If a student subscribes halfway through a semester, their access
+must expire at the semester's configured end date.
+
+Do NOT grant "13 weeks from the purchase date."
+
+The semester itself defines the access period.
+
+
+## 74. SEMESTER STATUS
+
+Support semester statuses such as:
+
+    DRAFT
+    ACTIVE
+    CLOSED
+    EXPIRED
+
+Only an appropriate active semester should be available for
+new subscriptions.
+
+Historical semesters must remain available in the database for
+historical records and reporting.
+
+Do not automatically delete historical data.
+
+
+## 75. SEMESTER ACCESS / ENTITLEMENTS
+
+A successful payment creates an entitlement for:
+
+    user
+        +
+    semester
+
+The entitlement must contain information such as:
+
+    - id
+    - user_id
+    - semester_id
+    - payment_reference
+    - starts_at
+    - expires_at
+    - status
+    - created_at
+
+Access is granted only while:
+
+    authenticated user
+        AND
+    valid entitlement
+        AND
+    current time < entitlement expiry
+
+Do not grant access merely because a payment callback was visited.
+
+
+## 76. ACADEMIC HUB PAYMENT
+
+Use Paystack for Academic Hub payments.
+
+The Academic Hub payment system is completely separate from:
+
+    - TACSFON general donations
+    - existing TACSFON programme payments
+
+Do not merge the systems.
+
+The Academic Hub must use Paystack's payment flow.
+
+The price must come from the selected semester configuration.
+
+Never trust an amount sent from the browser.
+
+The server must retrieve the authoritative semester price from
+the database before initializing a Paystack transaction.
+
+Payment reference must be unique.
+
+Include sufficient metadata to associate the transaction with:
+
+    - Academic Hub user
+    - semester
+    - internal entitlement/payment record
+
+Suggested metadata:
+
+    userId
+    semesterId
+    internalPaymentId
+
+Do not place sensitive information in payment metadata.
+
+
+## 77. PAYSTACK ENVIRONMENT VARIABLES
+
+Paystack credentials must be stored in environment variables.
+
+Expected configuration:
+
+    PAYSTACK_SECRET_KEY=
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=
+
+The secret key must only be accessible server-side.
+
+Never expose:
+
+    PAYSTACK_SECRET_KEY
+
+to client-side JavaScript.
+
+Never hardcode Paystack keys in source code.
+
+Never commit `.env.local` or secret credentials to Git.
+
+
+## 78. PAYSTACK PAYMENT FLOW
+
+Expected flow:
+
+    User selects semester
+            ↓
+    User must be authenticated
+            ↓
+    Server retrieves semester
+            ↓
+    Server checks semester is ACTIVE
+            ↓
+    Server retrieves authoritative price
+            ↓
+    Server creates internal payment record
+            ↓
+    Server initializes Paystack transaction
+            ↓
+    User completes Paystack payment
+            ↓
+    Paystack callback/webhook
+            ↓
+    Server verifies transaction
+            ↓
+    Server confirms:
+        - reference
+        - amount
+        - currency
+        - transaction status
+        - intended semester
+        - intended user
+    ↓
+    Entitlement created/activated
+            ↓
+    Academic Hub unlocked
+
+
+## 79. PAYMENT VERIFICATION
+
+Never trust:
+
+    - frontend success state
+    - query parameters alone
+    - browser redirect alone
+    - client-supplied amount
+    - client-supplied semester price
+
+The server must verify the transaction with Paystack.
+
+Implement a secure Paystack webhook endpoint.
+
+Example:
+
+    /api/paystack/webhook
+
+Verify the webhook signature according to Paystack's current
+documentation.
+
+Also verify the transaction server-side before granting access.
+
+Payment processing must be idempotent.
+
+If the same successful Paystack event is received multiple times,
+it must not create duplicate entitlements.
+
+
+## 80. PAYMENT RECORDS
+
+Create a dedicated Academic Hub payment table.
+
+Suggested fields:
+
+    id
+    user_id
+    semester_id
+    paystack_reference
+    amount
+    currency
+    status
+    paid_at
+    created_at
+    updated_at
+
+Use appropriate statuses such as:
+
+    PENDING
+    SUCCESS
+    FAILED
+    ABANDONED
+
+Do not treat PENDING as paid access.
+
+
+## 81. ACADEMIC HUB AUTHENTICATION
+
+Academic Hub paid content requires an authenticated account.
+
+A visitor may:
+
+    - browse the public landing page
+    - view the demo
+    - inspect available categories
+    - see the current semester offer
+
+but must authenticate and have a valid semester entitlement
+before accessing protected materials.
+
+
+## 82. ACCESS SHARING PROTECTION
+
+The system cannot completely prevent a user from manually giving
+their credentials to another person, but it must make casual account
+sharing difficult.
+
+Implement:
+
+    - authenticated accounts
+    - email verification where supported by the existing auth system
+    - protected material routes
+    - protected Supabase Storage objects
+    - entitlement checks on protected material requests
+    - no publicly accessible original material URLs
+
+Do not use public Supabase Storage URLs for paid materials.
+
+Paid materials must be stored in a private bucket.
+
+When a user requests a protected material:
+
+    authenticate user
+        ↓
+    verify active semester entitlement
+        ↓
+    authorize material
+        ↓
+    generate a temporary/signed access URL
+        ↓
+    return the authorized resource
+
+Do not expose permanent public file URLs.
+
+Where practical, implement a reasonable active-session/device
+limitation to discourage credential sharing.
+
+Do not make the system unnecessarily hostile to legitimate users.
+
+
+## 83. MATERIAL STORAGE
+
+Do NOT store academic PDFs/images inside:
+
+    public/
+    app/
+    src/
+    the Git repository
+
+Do not commit academic materials into the Next.js project.
+
+Use Supabase Storage for the actual files.
+
+Use a PRIVATE Supabase Storage bucket for protected materials.
+
+Suggested bucket:
+
+    academic-materials
+
+Possible logical organization:
+
+    academic-materials/
+        <semester-id>/
+            <material-id>/
+
+The exact storage path is implementation-defined.
+
+The database, not the physical folder structure, is the source
+of truth for metadata.
+
+
+## 84. MATERIAL DATABASE MODEL
+
+Create a materials table containing structured metadata.
+
+Suggested fields:
+
+    id
+    title
+    material_type
+    school_id
+    department_id
+    course_id
+    level
+    academic_session
+    semester_id
+    original_filename
+    storage_path
+    file_type
+    mime_type
+    file_size
+    page_count
+    is_published
+    created_at
+    updated_at
+
+Additional useful fields may be added if genuinely necessary.
+
+Do not duplicate entire material files inside PostgreSQL.
+
+
+## 85. NORMALIZED FILE UPLOADS
+
+The Academic Hub Admin dashboard receives files that have already
+been normalized by an external process.
+
+The external sorter is NOT part of this project.
+
+The TACSFON project must assume that uploaded filenames follow the
+approved naming convention.
+
+Expected conceptual format:
+
+    material_type__level__school__department__course__session.ext
+
+Example:
+
+    past_questions__500__science__computer_science__CSC_308__2024-2025.pdf
+
+Another example:
+
+    manual__300__science__computer_science__CSC_301__2024-2025.pdf
+
+The delimiter should be consistent and parser-safe.
+
+Do not use ambiguous delimiters that could conflict with metadata.
+
+
+## 86. FILENAME PARSER
+
+Create a small TypeScript parser/validator for normalized filenames.
+
+The parser should:
+
+    - remove the extension
+    - split the normalized filename
+    - identify each metadata segment
+    - normalize where appropriate
+    - validate required fields
+    - resolve IDs against the database
+    - reject invalid files
+    - produce structured metadata
+
+Do not use arbitrary `.includes()` checks as the primary parser.
+
+Use deterministic parsing based on the agreed filename structure.
+
+Use database lookups for:
+
+    school
+    department
+    course
+    material type
+    semester/session
+
+If a filename contains an unknown school, department, course or
+material type:
+
+    do NOT invent a value.
+
+Instead:
+
+    flag the upload for Admin correction.
+
+
+## 87. ADMIN MATERIAL UPLOAD
+
+Add an Academic Materials management area to the Admin dashboard.
+
+Provide:
+
+    + Upload Materials
+
+Admin can select multiple already-normalized files.
+
+After selection:
+
+    1. Parse filenames
+    2. Validate metadata
+    3. Resolve academic entities
+    4. Display a review table
+    5. Allow Admin to correct metadata
+    6. Upload approved files to private Supabase Storage
+    7. Create database records
+    8. Publish the materials
+
+Do not immediately publish files simply because they were selected.
+
+
+## 88. MATERIAL UPLOAD REVIEW
+
+Before publishing, show a clear review interface.
+
+Example:
+
+    File:
+    past_questions__500__science__computer_science__CSC_308__2024-2025.pdf
+
+    Type:
+    Past Questions
+
+    Level:
+    500
+
+    School:
+    School of Science
+
+    Department:
+    Computer Science
+
+    Course:
+    CSC 308
+
+    Session:
+    2024/2025
+
+    Semester:
+    First Semester
+
+Actions:
+
+    [Edit]
+    [Approve]
+    [Reject]
+
+Allow the Admin to correct metadata before publishing.
+
+
+## 89. DUPLICATE MATERIAL PROTECTION
+
+Prevent accidental duplicate uploads.
+
+Use a combination of:
+
+    - normalized metadata
+    - filename
+    - file checksum/hash where appropriate
+
+If a duplicate or likely duplicate is detected:
+
+    warn the Admin
+
+Do not silently overwrite existing academic material.
+
+Require an explicit Admin decision.
+
+
+## 90. MATERIAL PUBLISHING
+
+A material should only become visible to students when:
+
+    - metadata is valid
+    - file upload succeeded
+    - database record exists
+    - material is marked published
+
+Do not expose partially uploaded materials.
+
+
+## 91. MATERIAL PREVIEW
+
+Students should be able to preview:
+
+    - PDF files
+    - image files
+
+without downloading the original file.
+
+PDF preview should use an appropriate browser-compatible viewer
+or controlled preview mechanism.
+
+Images should be displayed responsively.
+
+Ensure previews remain protected behind authentication and
+semester entitlement checks.
+
+Do not expose the original private Storage URL permanently.
+
+
+## 92. DOWNLOADS — CURRENTLY DISABLED
+
+Downloads should be architecturally considered but NOT enabled
+in the initial Academic Hub release.
+
+Future download capability may be implemented as:
+
+    // FUTURE FEATURE — DOWNLOADS
+    // Downloads are currently disabled.
+    //
+    // When enabled:
+    // - authenticate user
+    // - verify active semester entitlement
+    // - generate a watermarked derivative
+    // - never expose the original master file
+    // - log the download where appropriate
+
+Do not show an active Download button in the initial release.
+
+If a download feature is implemented later, downloaded files must
+contain the watermark:
+
+    TACSFON × FC STUDIO
+
+
+## 93. WATERMARK ARCHITECTURE
+
+Original master files stored in Supabase must remain clean.
+
+Do NOT permanently watermark the original uploaded file.
+
+Future downloadable derivatives should be generated from the
+clean master.
+
+Watermark text:
+
+    TACSFON × FC STUDIO
+
+The watermark should be subtle enough not to interfere with
+academic readability.
+
+PDFs may use a subtle repeated diagonal watermark.
+
+Images may use a subtle overlay watermark.
+
+Do not alter the master file.
+
+
+## 94. DEMO / PREVIEW BEFORE PAYMENT
+
+The Academic Hub must provide a demonstration area before payment.
+
+Unauthenticated visitors should be able to see examples of what
+they receive after subscribing.
+
+Include:
+
+    - demo video
+    - demo PDF
+    - demo image
+
+These must be clearly marked as:
+
+    DEMO
+    SAMPLE
+    EXAMPLE
+
+or equivalent.
+
+Demo materials must NOT grant access to the protected academic
+library.
+
+The demo should communicate the quality and organization of the
+actual service without exposing the full paid library.
+
+
+## 95. ACADEMIC HUB LANDING PAGE
+
+The landing page should clearly explain:
+
+    - what Academic Hub is
+    - what material categories are available
+    - how semester access works
+    - what the current semester access period is
+    - the configured price
+    - what students receive
+    - demo materials
+    - payment flow
+    - support/contact information
+
+Example messaging:
+
+    "Get organized access to academic resources for your semester."
+
+Explain that one active semester subscription provides access to
+all published Academic Hub materials available for that semester.
+
+Do not claim materials exist when they do not.
+
+
+## 96. SEMESTER ACCESS UX
+
+Display the configured semester information dynamically.
+
+Example:
+
+    2026/2027 — First Semester
+
+    Access period:
+    12 October 2026 — 11 January 2027
+
+    Full semester access
+
+    ₦X,XXX
+
+    [ Get Access ]
+
+The dates and price must come from the database.
+
+Do not hardcode them in the UI.
+
+
+## 97. EXPIRED ACCESS
+
+When a semester expires:
+
+    - the user's entitlement becomes expired
+    - protected material access is denied
+    - the user may still access their account
+    - payment history remains available
+    - previous semester records remain preserved
+
+If a new semester is available, show an appropriate option to
+purchase the new semester.
+
+Do not delete old entitlements.
+
+
+## 98. ADMIN ACADEMIC HUB DASHBOARD
+
+Add Academic Hub management to the existing Admin system.
+
+Admin should be able to manage:
+
+    - academic sessions
+    - semesters
+    - semester prices
+    - semester dates
+    - schools
+    - departments
+    - courses
+    - material types
+    - materials
+    - demo materials
+    - published/unpublished state
+    - Academic Hub payment records
+    - user semester entitlements
+
+Do not expose these controls publicly.
+
+
+## 99. ADMIN SEMESTER MANAGEMENT
+
+Admin must be able to:
+
+    - create semester
+    - edit semester
+    - activate semester
+    - close semester
+    - view historical semesters
+
+Fields:
+
+    academic session
+    semester
+    start date
+    end date
+    price
+    status
+    description
+
+Validate:
+
+    end date > start date
+    price >= 0
+
+Avoid allowing contradictory overlapping ACTIVE semesters unless
+the implementation explicitly supports them.
+
+
+## 100. ADMIN ACADEMIC STRUCTURE
+
+Admin management screens should support:
+
+    Schools
+        ↓
+    Departments
+        ↓
+    Courses
+
+Use relational references rather than storing free-form strings
+where practical.
+
+Allow deactivation rather than destructive deletion when an entity
+is already referenced by published materials.
+
+Historical materials must remain valid if an academic entity is
+later renamed/deactivated.
+
+
+## 101. SECURITY / SUPABASE RLS
+
+Implement appropriate Supabase Row Level Security.
+
+Students/public users must NOT be able to:
+
+    - create semesters
+    - change prices
+    - create schools/departments/courses
+    - publish materials
+    - replace materials
+    - modify material metadata
+    - access another user's entitlement
+    - alter payment records
+    - bypass semester access
+
+Admin operations must be protected by the existing authenticated
+Admin system.
+
+Paid materials must remain protected.
+
+Do not rely solely on client-side route protection.
+
+Server-side authorization is required.
+
+
+## 102. PAYMENT SECURITY
+
+Never trust the client for:
+
+    - payment amount
+    - semester ID
+    - entitlement expiry
+    - payment status
+
+The server must determine all authoritative values.
+
+Verify Paystack transactions server-side.
+
+Validate:
+
+    - transaction reference
+    - transaction status
+    - amount
+    - currency
+    - associated user
+    - associated semester
+
+Prevent duplicate entitlement creation.
+
+
+## 103. SUPPORT INFORMATION
+
+Academic Hub support:
+
+    Email:
+    festusphillip19@gmail.com
+
+    Phone:
+    09153741926
+
+Use this information in appropriate support/payment help areas.
+
+
+## 104. ACCESS / SUBSCRIPTION COPY
+
+Use clear, honest language.
+
+Students should understand:
+
+    - payment grants access to the selected semester
+    - access lasts only until that semester's configured end date
+    - one semester subscription provides access to all published
+      Academic Hub materials available for that semester
+    - access is tied to their account
+    - demo content is available before payment
+
+Do not promise specific materials unless they are actually present.
+
+
+## 105. ROUTING
+
+The Academic Hub should have its own route structure.
+
+The exact route names may be selected to fit the existing project,
+but the Academic Hub must not clutter the main TACSFON church
+navigation.
+
+Possible conceptual structure:
+
+    /academic
+    /academic/...
+    
+or another clean dedicated route.
+
+Do not expose every Academic Hub admin route publicly.
+
+The Academic Hub may be reached from a subtle link/button where
+appropriate, but it should remain visually distinct from the main
+TACSFON website.
+
+
+## 106. COMPONENT / ARCHITECTURE GUIDELINES
+
+Continue following the existing project architecture:
+
+    - Server Components by default
+    - Client Components only where interactivity is required
+    - TypeScript
+    - Tailwind CSS
+    - shadcn/ui
+    - Zod
+    - React Hook Form where forms are required
+    - Lucide React
+    - Framer Motion for restrained animation
+    - Supabase
+    - Next.js App Router
+
+Do not introduce another UI framework.
+
+Do not create unnecessary dependencies.
+
+
+## 107. API / SERVER LOGIC
+
+Use Next.js server functionality where appropriate.
+
+Create clear server-side boundaries for:
+
+    - Paystack initialization
+    - Paystack verification
+    - Paystack webhook
+    - entitlement creation
+    - protected material authorization
+    - material publishing
+    - admin operations
+
+Do not expose Supabase service-role credentials to the client.
+
+Do not expose Paystack secret credentials to the client.
+
+
+## 108. ERROR HANDLING
+
+Provide useful errors for:
+
+    - invalid filename
+    - unknown school
+    - unknown department
+    - unknown course
+    - unknown material type
+    - invalid semester
+    - duplicate material
+    - upload failure
+    - payment initialization failure
+    - payment verification failure
+    - expired entitlement
+    - unauthorized material access
+
+Errors should be human-readable.
+
+Do not expose sensitive server information.
+
+
+## 109. RESPONSIVE / ACCESSIBLE UI
+
+Academic Hub must be mobile-first.
+
+Ensure:
+
+    - readable typography
+    - large touch targets
+    - keyboard navigation
+    - visible focus states
+    - semantic headings
+    - accessible dialogs
+    - accessible forms
+    - appropriate loading states
+    - appropriate empty states
+    - appropriate error states
+
+The material browser must work particularly well on mobile because
+students may primarily access the service from phones.
+
+
+## 110. SEO / DISCOVERABILITY
+
+The public Academic Hub landing page should have appropriate:
+
+    - title
+    - description
+    - Open Graph metadata
+    - semantic headings
+
+Protected academic materials should not be publicly indexed.
+
+Do not expose private material URLs to search engines.
+
+
+## 111. EMPTY STATES
+
+Do not display fake academic content.
+
+If a category contains no materials:
+
+    "No materials available yet."
+
+If a course has no material:
+
+    "No materials have been published for this course yet."
+
+Provide useful navigation back to the previous selection.
+
+
+## 112. LOADING STATES
+
+Use polished loading states for:
+
+    - payment initialization
+    - material upload
+    - material publishing
+    - protected preview loading
+    - academic structure loading
+
+Avoid excessive skeleton screens where a simple loading state is
+more appropriate.
+
+
+## 113. DEMO MATERIAL MANAGEMENT
+
+Demo resources should be manageable by Admin.
+
+Admin should be able to:
+
+    - upload demo video
+    - upload demo PDF
+    - upload demo image
+    - replace demo resources
+    - remove demo resources
+    - control whether a demo resource is visible
+
+Demo resources must remain separate from paid materials.
+
+
+## 114. AUDIT / TRACEABILITY
+
+Where practical, record:
+
+    - who uploaded a material
+    - when it was uploaded
+    - who published it
+    - when it was published
+    - who modified metadata
+
+Do not sacrifice simplicity for unnecessary enterprise auditing.
+
+
+## 115. DO NOT CONFUSE SYSTEMS
+
+The following systems must remain separate:
+
+    1. TACSFON general donation system
+    2. TACSFON programme payment system
+    3. Academic Hub semester subscription system
+
+Each must have its own:
+
+    - database records
+    - payment logic
+    - authorization logic
+    - UI flow
+
+Do not reuse programme-payment assumptions for Academic Hub.
+
+
+## 116. IMPLEMENTATION ORDER
+
+Implement the Academic Hub in this order:
+
+    Phase 1:
+        Database schema
+        RLS
+        Academic sessions
+        Semesters
+        Schools
+        Departments
+        Courses
+        Material types
+
+    Phase 2:
+        Academic Hub visual shell
+        Landing page
+        Demo section
+        Material browsing UI
+
+    Phase 3:
+        Admin academic management
+        Material upload
+        Filename parser
+        Metadata review
+        Supabase Storage
+
+    Phase 4:
+        Authentication
+        Semester entitlements
+        Protected materials
+
+    Phase 5:
+        Paystack initialization
+        Paystack verification
+        Webhook
+        Payment records
+        Entitlement activation
+
+    Phase 6:
+        PDF/image preview
+        Access expiry
+        Error/loading/empty states
+
+    Phase 7:
+        Security review
+        RLS review
+        Mobile review
+        Accessibility review
+        SEO review
+
+Do not skip database/security design and attempt to build the
+payment UI first.
+
+
+## 117. FUTURE DOWNLOAD ARCHITECTURE
+
+Do not implement active downloads in the first release.
+
+Keep the system structured so that downloads can later be added
+without changing the master storage architecture.
+
+Future flow:
+
+    User requests download
+        ↓
+    Authenticate
+        ↓
+    Verify entitlement
+        ↓
+    Retrieve clean master
+        ↓
+    Generate watermarked derivative
+        ↓
+    Deliver temporary download
+        ↓
+    Log download if required
+
+Never provide direct access to the clean master.
+
+
+## 118. FINAL DEFINITION OF DONE
+
+The Academic Hub feature is considered complete only when:
+
+[ ] Academic Hub has its own cream + blue visual identity.
+
+[ ] TACSFON OAUSTECH branding is subtle and contextual.
+
+[ ] Main TACSFON website functionality remains intact.
+
+[ ] Academic Hub is separate from the main church-site visual
+    experience.
+
+[ ] Admin can create academic sessions.
+
+[ ] Admin can create/manage semesters.
+
+[ ] Semester price is configurable by Admin.
+
+[ ] Semester start/end dates are configurable by Admin.
+
+[ ] No current semester is hardcoded.
+
+[ ] Schools are manageable by Admin.
+
+[ ] Departments are manageable by Admin.
+
+[ ] Courses are manageable by Admin.
+
+[ ] Material types are manageable/configurable.
+
+[ ] Normalized filenames can be parsed automatically.
+
+[ ] Invalid filenames are rejected or sent for correction.
+
+[ ] Admin can review uploaded material metadata before publishing.
+
+[ ] Materials are stored in private Supabase Storage.
+
+[ ] Material metadata is stored in Supabase Database.
+
+[ ] Published materials are associated with the correct semester.
+
+[ ] Students can browse:
+        type → level → school → department → course → session/semester
+
+[ ] Demo video is available before payment.
+
+[ ] Demo PDF is available before payment.
+
+[ ] Demo image is available before payment.
+
+[ ] Demo resources are clearly marked as samples.
+
+[ ] Students can create/authenticate an Academic Hub account.
+
+[ ] Paystack test integration works.
+
+[ ] Paystack secret key is server-only.
+
+[ ] Paystack transactions are verified server-side.
+
+[ ] Webhook signature is verified.
+
+[ ] Payment processing is idempotent.
+
+[ ] Successful payment creates the correct semester entitlement.
+
+[ ] Student access expires at the configured semester end date.
+
+[ ] Student cannot access paid materials without valid entitlement.
+
+[ ] Paid material files are not publicly accessible.
+
+[ ] Protected material access uses authorization checks.
+
+[ ] Direct public Storage URLs are not exposed.
+
+[ ] Expired subscriptions lose protected material access.
+
+[ ] Historical payments and entitlements remain preserved.
+
+[ ] Downloads remain disabled in the initial release.
+
+[ ] Future download architecture supports watermarking.
+
+[ ] Watermark text is:
+        TACSFON × FC STUDIO
+
+[ ] Original master files remain unwatermarked.
+
+[ ] No academic PDFs/images are committed to the Git repository.
+
+[ ] No fake academic data is introduced.
+
+[ ] No Resources/Sermons section is created.
+
+[ ] Existing TACSFON functionality is not broken or unnecessarily
+    rewritten.
+
+[ ] Mobile experience is polished.
+
+[ ] Accessibility basics are implemented.
+
+[ ] Public landing page has appropriate SEO metadata.
+
+[ ] Protected academic materials are not publicly indexed.
+
+[ ] Appropriate loading, empty and error states exist.
+
+[ ] Academic Hub support information is displayed:
+
+        festusphillip19@gmail.com
+        09153741926

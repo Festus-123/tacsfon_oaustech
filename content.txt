@@ -1239,3 +1239,1106 @@ NOT REQUIRED.
 
 Do not create a dedicated Resources, Sermons, or downloadable materials
 section unless this requirement changes in the future.
+
+============================================================
+ACADEMIC HUB
+============================================================
+
+SECTION STATUS:
+NEW FEATURE — ACADEMIC HUB.
+
+============================================================
+1. ACADEMIC HUB IDENTITY
+============================================================
+
+PRODUCT NAME:
+Academic Hub
+
+PRIMARY BRAND:
+Academic Hub
+
+ORGANIZATION / PARTNER:
+TACSFON OAUSTECH
+
+BRAND RELATIONSHIP:
+Academic Hub is an academic resource platform associated with
+TACSFON (OAUSTECH).
+
+The Academic Hub should have its own visual identity and should not
+look like a continuation of the main TACSFON fellowship website.
+
+The relationship to TACSFON OAUSTECH should remain subtle and
+contextual.
+
+PREFERRED BRAND PRESENTATION:
+
+Academic Hub
+
+Organized academic resources for students.
+
+TACSFON OAUSTECH
+[small contextual attribution]
+
+or:
+
+Academic Hub
+In partnership with TACSFON OAUSTECH
+
+
+============================================================
+2. ACADEMIC HUB PURPOSE
+============================================================
+
+Academic Hub exists to give students organized access to academic
+materials for their current academic semester.
+
+The platform should make it easier for students to discover and
+study from materials that may otherwise be scattered across
+different files, devices, chats, and sources.
+
+The platform may contain:
+
+- Past Questions
+- Manuals / Lecture Notes
+- Workbooks
+- Materials
+
+A student's active semester subscription gives them access to all
+published Academic Hub materials available for that semester.
+
+Do not claim that a particular course, department, school, or
+material exists unless it has actually been added to the system.
+
+
+============================================================
+3. ACADEMIC HUB BRAND VOICE
+============================================================
+
+The Academic Hub should sound:
+
+- Clear
+- Modern
+- Student-friendly
+- Helpful
+- Confident
+- Simple
+- Academic
+- Trustworthy
+
+Avoid:
+
+- Excessive corporate language
+- Excessive religious language
+- Overly promotional language
+- Fake urgency
+- Exaggerated claims
+- Generic AI-generated marketing phrases
+
+The Academic Hub is an academic resource product.
+
+Its copy should primarily communicate usefulness, organization,
+access, and convenience.
+
+
+============================================================
+4. ACADEMIC HUB VISUAL DIRECTION
+============================================================
+
+PRIMARY BACKGROUND:
+Cream
+
+PRIMARY ACCENT:
+ChatGPT-inspired blue
+
+SECONDARY ACCENT:
+Very faint/light blue inspired by modern Google-style interface
+accents.
+
+SUPPORTING COLORS:
+White
+Soft neutral tones
+Dark readable text
+
+DESIGN CHARACTER:
+
+- Clean
+- Modern
+- Editorial
+- Academic
+- Calm
+- Spacious
+- Minimal but polished
+- Mobile-first
+
+The interface should feel like a modern academic product rather
+than a traditional school portal.
+
+Avoid making the Academic Hub visually resemble the main TACSFON
+church website.
+
+Avoid:
+
+- Heavy forest green branding
+- Excessive gold
+- Dark premium SaaS aesthetics
+- Excessive glassmorphism
+- Excessive gradients
+- Loud colors
+- Overly decorative religious imagery
+
+
+============================================================
+5. ACADEMIC MATERIAL TYPES
+============================================================
+
+INITIAL MATERIAL TYPES:
+
+1. PAST QUESTIONS
+
+Past examination questions and related academic question papers
+organized by level, school, department, course, and academic period.
+
+2. MANUALS / LECTURE NOTES
+
+Academic manuals, lecture notes, course notes, and related
+instructional documents.
+
+These should be presented as one material category rather than
+separate categories.
+
+3. WORKBOOKS
+
+Academic workbooks and structured study materials.
+
+4. MATERIALS
+
+General academic resources that do not fit specifically into the
+other categories.
+
+IMPORTANT:
+
+Do NOT create a Tutorials category.
+
+Material types should remain configurable through the Admin system
+so additional categories can be introduced later.
+
+
+============================================================
+6. ACADEMIC MATERIAL BROWSING
+============================================================
+
+PRIMARY NAVIGATION:
+
+Academic Hub
+
+    Past Questions
+    Manuals & Lecture Notes
+    Workbooks
+    Materials
+
+After selecting a material type, users should progressively select:
+
+    Level
+        ↓
+    School
+        ↓
+    Department
+        ↓
+    Course
+        ↓
+    Academic Session
+        ↓
+    Semester
+
+EXAMPLE:
+
+Past Questions
+    ↓
+500 Level
+    ↓
+School of Science
+    ↓
+Computer Science
+    ↓
+CSC 308
+    ↓
+2024/2025
+    ↓
+First Semester
+
+
+IMPORTANT:
+
+The exact academic structure must not be permanently hardcoded into
+the website.
+
+Schools, departments, courses, academic sessions, and semesters
+must be manageable by Admin.
+
+
+============================================================
+7. ACADEMIC STRUCTURE
+============================================================
+
+INITIAL LEVELS:
+
+- 100 Level
+- 200 Level
+- 300 Level
+- 400 Level
+- 500 Level
+
+NOTE:
+Additional levels or changes may be introduced later if required.
+
+SCHOOLS:
+
+[PLACEHOLDER — Insert official OAUSTECH Schools.]
+
+DEPARTMENTS:
+
+[PLACEHOLDER — Insert official OAUSTECH Departments.]
+
+COURSES:
+
+[PLACEHOLDER — Insert initial course list.]
+
+IMPORTANT:
+
+OAUSTECH may change academic structures over time.
+
+Departments may be:
+
+- Created
+- Renamed
+- Deactivated
+- Reorganized
+
+Courses may be:
+
+- Created
+- Renamed
+- Deactivated
+- Reassigned where appropriate
+
+The Admin should therefore be able to manage Schools, Departments,
+and Courses without requiring source-code changes.
+
+
+============================================================
+8. ACADEMIC SESSIONS & SEMESTERS
+============================================================
+
+Academic Hub must support multiple academic sessions and semesters.
+
+Do NOT hardcode a current academic session or semester.
+
+Examples:
+
+    2026/2027
+        First Semester
+        Second Semester
+
+    2027/2028
+        First Semester
+        Second Semester
+
+Each semester should be configured by Admin.
+
+SEMESTER INFORMATION:
+
+- Academic session
+- Semester name
+- Start date
+- End date
+- Price
+- Status
+- Optional description
+- Optional access instructions
+
+Example:
+
+ACADEMIC SESSION:
+[PLACEHOLDER]
+
+SEMESTER:
+[PLACEHOLDER]
+
+START DATE:
+[PLACEHOLDER]
+
+END DATE:
+[PLACEHOLDER]
+
+PRICE:
+[ADMIN CONFIGURED]
+
+STATUS:
+[ADMIN CONFIGURED]
+
+
+============================================================
+9. SEMESTER ACCESS
+============================================================
+
+A student's Academic Hub subscription applies to a specific
+semester.
+
+The student receives access to all published Academic Hub materials
+available for that semester.
+
+Access begins according to the configured semester/access rules and
+expires at the configured semester end date.
+
+IMPORTANT:
+
+Do NOT calculate access as a fixed number of weeks from the date of
+payment.
+
+For example, if a semester runs for approximately 13 weeks and a
+student subscribes during week 8, the student's access should still
+end when the configured semester ends.
+
+The semester dates are authoritative.
+
+A student's access should therefore follow:
+
+    Semester Start
+            ↓
+    Semester End
+
+rather than:
+
+    Payment Date + 13 Weeks
+
+
+============================================================
+10. ACADEMIC HUB SUBSCRIPTION
+============================================================
+
+SUBSCRIPTION MODEL:
+
+Semester-based access.
+
+A successful subscription gives the student access to all published
+Academic Hub materials available for the selected semester.
+
+PRICE:
+
+Admin configured.
+
+Do not hardcode a price in the frontend or application source.
+
+Example:
+
+2026/2027 — First Semester
+Full Semester Access
+₦[ADMIN CONFIGURED]
+
+The actual price should always be retrieved from the active
+semester configuration.
+
+
+============================================================
+11. PAYSTACK
+============================================================
+
+PAYMENT PROVIDER:
+Paystack
+
+Academic Hub payments are separate from:
+
+- General TACSFON donations
+- Existing TACSFON programme payments
+
+Do not combine these payment systems.
+
+PAYSTACK CONFIGURATION:
+
+Public Key:
+[ENVIRONMENT VARIABLE]
+
+Secret Key:
+[ENVIRONMENT VARIABLE]
+
+IMPORTANT:
+Actual Paystack credentials must never be stored in this content
+file.
+
+Use environment variables.
+
+EXPECTED ENVIRONMENT VARIABLES:
+
+PAYSTACK_SECRET_KEY=
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=
+
+
+============================================================
+12. PAYMENT EXPERIENCE
+============================================================
+
+Before payment, the student should clearly see:
+
+- Academic Hub
+- Selected academic session
+- Selected semester
+- Access period
+- Price
+- What the subscription includes
+- Demo materials
+- Support information
+- Payment action
+
+Suggested copy:
+
+"Get full access to Academic Hub materials available for this
+semester."
+
+Additional explanation:
+
+"Your semester subscription gives you access to all published
+Academic Hub materials available during the selected semester."
+
+Do not use fake scarcity.
+
+Do not claim that payment gives permanent access.
+
+
+============================================================
+13. DEMO EXPERIENCE
+============================================================
+
+The Academic Hub must allow visitors to see examples of the service
+before subscribing.
+
+The landing page should include a section such as:
+
+SEE WHAT YOU GET
+
+or:
+
+EXPLORE BEFORE YOU SUBSCRIBE
+
+The demo should contain:
+
+1. DEMO VIDEO
+2. DEMO PDF
+3. DEMO IMAGE
+
+These examples should demonstrate the quality and organization of
+the Academic Hub.
+
+DEMO VIDEO:
+[PLACEHOLDER — Insert demo video URL/file.]
+
+DEMO PDF:
+[PLACEHOLDER — Insert demo PDF.]
+
+DEMO IMAGE:
+[PLACEHOLDER — Insert demo image.]
+
+All demo content must be clearly marked:
+
+DEMO
+SAMPLE
+EXAMPLE
+
+or equivalent.
+
+Demo content must not provide access to the protected academic
+library.
+
+
+============================================================
+14. DEMO COPY
+============================================================
+
+Suggested introductory copy:
+
+"Take a look before you subscribe."
+
+"See how materials are organized, preview the kind of resources
+available, and explore the Academic Hub experience before getting
+full semester access."
+
+This copy may be refined during implementation.
+
+
+============================================================
+15. ACADEMIC HUB SUPPORT
+============================================================
+
+SUPPORT EMAIL:
+
+tacsfonoaustechchapter@gmail.com
+
+SUPPORT PHONE:
+
+09153741926
+
+Use these details for Academic Hub support, payment questions,
+access problems, and general enquiries where appropriate.
+
+Do not invent additional support channels.
+
+
+============================================================
+16. ACADEMIC HUB SOCIAL MEDIA
+============================================================
+
+FACEBOOK:
+Tacsfon Oaustech
+
+INSTAGRAM:
+@tacsfon_oaustech
+
+TIKTOK:
+[PLACEHOLDER — Insert official TikTok handle.]
+
+X / TWITTER:
+[PLACEHOLDER — Insert official X/Twitter handle.]
+
+SOCIAL MEDIA URLs:
+[PLACEHOLDER — Insert official URLs.]
+
+IMPORTANT:
+
+Do not invent social media URLs.
+
+Do not assume the social media handles are URLs.
+
+The Admin/content configuration should make it easy to update these
+later.
+
+
+============================================================
+17. ACADEMIC HUB FOOTER
+============================================================
+
+PRIMARY:
+
+Academic Hub
+
+SECONDARY:
+
+TACSFON OAUSTECH
+
+OPTIONAL CONTEXT:
+
+In partnership with TACSFON OAUSTECH
+
+DEVELOPER / TECHNICAL CREDIT:
+
+[PLACEHOLDER — Insert preferred FC Studio attribution.]
+
+The Academic Hub should not be dominated by TACSFON branding.
+
+The product identity remains:
+
+Academic Hub.
+
+
+============================================================
+18. MATERIAL ACCESS
+============================================================
+
+A subscribed student should be able to:
+
+- Browse available material types
+- Select level
+- Select school
+- Select department
+- Select course
+- Select academic session
+- Select semester
+- Preview available PDFs
+- Preview available images
+
+Protected materials should only be available to authenticated
+students with an active entitlement for the relevant semester.
+
+
+============================================================
+19. DOWNLOAD POLICY
+============================================================
+
+INITIAL STATUS:
+
+DOWNLOADS DISABLED.
+
+Students should initially preview materials directly through the
+Academic Hub.
+
+Future download functionality may be enabled later.
+
+When downloads are eventually enabled, downloaded materials should
+contain:
+
+    TACSFON × FC STUDIO
+
+as the watermark.
+
+Original master files must remain clean.
+
+Do not expose original storage files directly to users.
+
+
+============================================================
+20. WATERMARK
+============================================================
+
+WATERMARK TEXT:
+
+TACSFON × FC STUDIO
+
+PURPOSE:
+
+Protect distributed copies of Academic Hub materials while
+maintaining readability.
+
+The watermark should be subtle and professional.
+
+Suggested implementation:
+
+PDF:
+Subtle repeated diagonal watermark.
+
+IMAGE:
+Subtle overlay watermark.
+
+IMPORTANT:
+
+The original master file must never be permanently modified just to
+create a watermark.
+
+Watermarked files should be generated as derivatives if/when
+downloads are enabled.
+
+
+============================================================
+21. USER ACCESS / ACCOUNT SHARING
+============================================================
+
+Academic Hub access should be tied to the student's individual
+account.
+
+Users should not receive permanent public URLs to protected
+materials.
+
+Protected resources should require:
+
+- Authentication
+- Valid semester entitlement
+- Server-side authorization
+
+The system should include reasonable protections against casual
+account sharing.
+
+Where appropriate, session/device limitations may be used.
+
+Do not create unnecessarily restrictive access rules that make
+legitimate student usage difficult.
+
+
+============================================================
+22. ACCESS EXPIRATION
+============================================================
+
+When the student's semester entitlement expires:
+
+- Protected materials become inaccessible.
+- The account remains available.
+- Payment history remains available.
+- Historical semester information remains preserved.
+- The student may subscribe to a future active semester.
+
+Do not delete expired entitlements.
+
+
+============================================================
+23. MATERIAL CONTENT RULES
+============================================================
+
+Academic materials must be represented accurately.
+
+Do not invent:
+
+- Course codes
+- Course titles
+- Schools
+- Departments
+- Levels
+- Academic sessions
+- Examination years
+- Past questions
+- Manuals
+- Lecture notes
+- Workbooks
+- Material descriptions
+
+If information is unavailable, use:
+
+[PLACEHOLDER]
+
+or allow the Admin to supply the information.
+
+The system must never fabricate academic content.
+
+
+============================================================
+24. ACADEMIC HUB LANDING PAGE COPY
+============================================================
+
+PRIMARY HEADING:
+
+[PLACEHOLDER — Final Academic Hub headline.]
+
+SUGGESTED DIRECTION:
+
+"Your academic materials, organized."
+
+SUBHEADING:
+
+[PLACEHOLDER — Insert final supporting statement.]
+
+SUGGESTED DIRECTION:
+
+"Find past questions, lecture notes, workbooks, and other academic
+resources organized around your level, school, department, course,
+and semester."
+
+PRIMARY CTA:
+
+Get Semester Access
+
+SECONDARY CTA:
+
+Explore Demo
+
+
+============================================================
+25. WHAT YOU GET SECTION
+============================================================
+
+SECTION TITLE:
+
+WHAT YOU GET
+
+INTRODUCTION:
+
+[PLACEHOLDER — Insert final introductory copy.]
+
+INITIAL ITEMS:
+
+PAST QUESTIONS
+Practice with previous examination questions and understand the
+kind of material available for your courses.
+
+MANUALS & LECTURE NOTES
+Access organized academic notes and course materials.
+
+WORKBOOKS
+Find structured materials designed to support your studies.
+
+MATERIALS
+Explore additional academic resources made available for your
+semester.
+
+
+============================================================
+26. HOW IT WORKS
+============================================================
+
+SECTION TITLE:
+
+HOW IT WORKS
+
+STEP 1:
+Choose your semester.
+
+STEP 2:
+Subscribe securely through Paystack.
+
+STEP 3:
+Access the Academic Hub for the duration of your semester.
+
+STEP 4:
+Browse and preview available academic materials.
+
+STEP 5:
+Study from one organized academic library.
+
+
+============================================================
+27. SEMESTER ACCESS COPY
+============================================================
+
+SECTION TITLE:
+
+SEMESTER ACCESS
+
+SUGGESTED COPY:
+
+"One subscription. Full access to the Academic Hub materials
+available for your semester."
+
+SUPPORTING COPY:
+
+"Your access follows the semester period configured by the Academic
+Hub administrator. When the semester ends, your access to protected
+materials expires."
+
+PRICE:
+
+[ADMIN CONFIGURED]
+
+SEMESTER:
+
+[ADMIN CONFIGURED]
+
+ACCESS PERIOD:
+
+[ADMIN CONFIGURED]
+
+
+============================================================
+28. PAYMENT SUPPORT COPY
+============================================================
+
+SECTION TITLE:
+
+NEED HELP?
+
+COPY:
+
+"Having trouble with payment or accessing your materials? Contact
+Academic Hub support and we'll help you get sorted."
+
+EMAIL:
+
+tacsfonoaustechchapter@gmail.com
+
+PHONE:
+
+09153741926
+
+
+============================================================
+29. EMPTY STATES
+============================================================
+
+NO MATERIALS:
+
+"No materials available yet."
+
+NO MATERIALS FOR COURSE:
+
+"No materials have been published for this course yet."
+
+NO MATERIALS FOR SEMESTER:
+
+"No materials have been published for this semester yet."
+
+NO RESULTS:
+
+"We couldn't find materials matching your selection."
+
+These messages may be refined during implementation while retaining
+the same meaning.
+
+
+============================================================
+30. ACCESS DENIED / EXPIRED COPY
+============================================================
+
+NOT SUBSCRIBED:
+
+"This material is available to Academic Hub subscribers."
+
+CTA:
+
+Get Semester Access
+
+
+EXPIRED:
+
+"Your semester access has expired."
+
+CTA:
+
+View Available Semesters
+
+
+UNAUTHENTICATED:
+
+"Sign in to continue."
+
+
+============================================================
+31. PAYMENT SUCCESS COPY
+============================================================
+
+TITLE:
+
+Payment Successful
+
+BODY:
+
+"Your Academic Hub semester access has been activated."
+
+SUPPORTING:
+
+"You now have access to the published materials available for this
+semester."
+
+CTA:
+
+Open Academic Hub
+
+
+============================================================
+32. PAYMENT FAILURE COPY
+============================================================
+
+TITLE:
+
+Payment Not Completed
+
+BODY:
+
+"We couldn't confirm your payment. No Academic Hub access has been
+activated yet."
+
+CTA:
+
+Try Again
+
+
+============================================================
+33. PAYMENT VERIFICATION COPY
+============================================================
+
+TITLE:
+
+Confirming Your Payment
+
+BODY:
+
+"We're confirming your payment securely. Please wait a moment."
+
+Do not tell the user that access has been granted until the server
+has successfully verified the Paystack transaction.
+
+
+============================================================
+34. ACADEMIC HUB ADMIN CONTENT
+============================================================
+
+The Admin dashboard should allow configuration of:
+
+- Academic sessions
+- Semesters
+- Semester start/end dates
+- Semester prices
+- Schools
+- Departments
+- Courses
+- Material types
+- Academic materials
+- Demo materials
+- Published/unpublished state
+
+Do not hardcode current semester information into content or
+application logic.
+
+
+============================================================
+35. CONTENT UPDATE RULE
+============================================================
+
+Academic Hub content that is expected to change over time should be
+stored/configured in an appropriate database or Admin-managed
+structure rather than requiring source-code changes.
+
+Examples:
+
+- Current academic session
+- Current semester
+- Semester price
+- Semester dates
+- Schools
+- Departments
+- Courses
+- Material types
+- Demo resources
+- Academic materials
+
+This content specification provides initial/default copy and
+configuration guidance only.
+
+
+============================================================
+36. PLACEHOLDERS TO COMPLETE LATER
+============================================================
+
+ACADEMIC HUB HEADLINE:
+[PLACEHOLDER]
+
+ACADEMIC HUB SUBHEADING:
+[PLACEHOLDER]
+
+ACADEMIC HUB DESCRIPTION:
+[PLACEHOLDER]
+
+CURRENT ACADEMIC SESSION:
+[PLACEHOLDER — ADMIN CONFIGURED]
+
+CURRENT SEMESTER:
+[PLACEHOLDER — ADMIN CONFIGURED]
+
+SEMESTER START DATE:
+[PLACEHOLDER — ADMIN CONFIGURED]
+
+SEMESTER END DATE:
+[PLACEHOLDER — ADMIN CONFIGURED]
+
+SEMESTER PRICE:
+[PLACEHOLDER — ADMIN CONFIGURED]
+
+SCHOOLS:
+[PLACEHOLDER — INSERT OFFICIAL OAUSTECH SCHOOLS]
+
+DEPARTMENTS:
+[PLACEHOLDER — INSERT OFFICIAL OAUSTECH DEPARTMENTS]
+
+COURSES:
+[PLACEHOLDER — INSERT INITIAL COURSE LIST]
+
+DEMO VIDEO:
+[PLACEHOLDER]
+
+DEMO PDF:
+[PLACEHOLDER]
+
+DEMO IMAGE:
+[PLACEHOLDER]
+
+TIKTOK:
+[PLACEHOLDER]
+
+X / TWITTER:
+[PLACEHOLDER]
+
+SOCIAL MEDIA URLS:
+[PLACEHOLDER]
+
+ACADEMIC HUB FINAL TAGLINE:
+[PLACEHOLDER]
+
+FC STUDIO FOOTER / DEVELOPER ATTRIBUTION:
+[PLACEHOLDER]
+
+
+============================================================
+END OF ACADEMIC HUB CONTENT
+============================================================
