@@ -4,15 +4,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminNav } from "@/components/admin/admin-nav";
 import {
-  BookOpen,
   Calendar,
   Building,
-  GraduationCap,
-  Layers,
   Upload,
   CreditCard,
-  CheckCircle2,
-  Users,
   ArrowRight,
 } from "lucide-react";
 import {

@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Building, GraduationCap, BookOpen, Check, Search } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { School, Department, Course } from "@/data/academic";
 import { Button } from "@/components/ui/button";
+
+function generateCourseId(): string {
+  return `course-${Date.now()}`;
+}
 
 interface StructureManagerProps {
   initialSchools: School[];
@@ -19,10 +23,9 @@ export function StructureManager({
   initialCourses,
 }: StructureManagerProps) {
   const [activeTab, setActiveTab] = useState<"courses" | "departments" | "schools">("courses");
-  const [schools, setSchools] = useState<School[]>(initialSchools);
-  const [departments, setDepartments] = useState<Department[]>(initialDepartments);
+  const schools = initialSchools;
+  const departments = initialDepartments;
   const [courses, setCourses] = useState<Course[]>(initialCourses);
-  const [search, setSearch] = useState("");
 
   // New Course Modal State
   const [showCourseModal, setShowCourseModal] = useState(false);
@@ -42,7 +45,7 @@ export function StructureManager({
 
     const deptObj = departments.find((d) => d.id === courseForm.department_id);
     const newCourse: Course = {
-      id: `course-${Date.now()}`,
+      id: generateCourseId(),
       department_id: courseForm.department_id,
       department_name: deptObj?.name || "Department",
       code: courseForm.code.toUpperCase().trim(),

@@ -2,7 +2,7 @@ import { createClient } from "./server";
 import { createPublicClient } from "./client";
 import {
   PaymentRequest,
-  PaymentSubmissionPerson,
+  PaymentSubmission,
   initialPaymentRequests,
   initialSubmissionPeople,
 } from "@/data/payments";
@@ -213,9 +213,13 @@ export async function getAdminPaymentRequests(): Promise<PaymentRequest[]> {
       }));
     }
 
-    return data.map((item: any) => {
+    interface PaymentRequestDbRecord extends PaymentRequest {
+      payment_submissions?: { total_people?: number }[];
+    }
+
+    return (data as unknown as PaymentRequestDbRecord[]).map((item) => {
       const submissions = item.payment_submissions || [];
-      const totalPeople = submissions.reduce((acc: number, curr: any) => acc + (curr.total_people || 0), 0);
+      const totalPeople = submissions.reduce((acc: number, curr: { total_people?: number }) => acc + (curr.total_people || 0), 0);
       const req: PaymentRequest = {
         id: item.id,
         programme_name: item.programme_name,
@@ -247,7 +251,7 @@ export async function getAdminPaymentRequests(): Promise<PaymentRequest[]> {
 
 export async function getAdminPaymentRequestById(id: string): Promise<{
   request: PaymentRequest | null;
-  submissions: any[];
+  submissions: PaymentSubmission[];
   people: {
     name: string;
     programme: string;
@@ -310,7 +314,16 @@ export async function getAdminPaymentRequestById(id: string): Promise<{
       .eq("payment_request_id", id)
       .order("created_at", { ascending: false });
 
-    const people = (peopleData || []).map((p: any) => ({
+    interface PersonRecord {
+      name: string;
+      created_at: string;
+      payment_submissions?: {
+        total_amount?: number;
+        amount_per_person_snapshot?: number;
+      };
+    }
+
+    const people = ((peopleData as unknown as PersonRecord[]) || []).map((p) => ({
       name: p.name,
       programme: request.programme_name,
       programme_date: request.programme_date,

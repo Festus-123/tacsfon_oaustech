@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminNav } from "@/components/admin/admin-nav";
-import { ArrowLeft, CreditCard, ShieldCheck, CheckCircle2, Clock, Users } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { getActiveSemester } from "@/lib/supabase/academic";
 
 export const metadata: Metadata = {

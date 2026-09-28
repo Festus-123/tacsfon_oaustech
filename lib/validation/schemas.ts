@@ -85,7 +85,7 @@ export const paymentRequestSchema = z.object({
     .max(2000, "Description cannot exceed 2,000 characters")
     .optional()
     .or(z.literal("")),
-  amount_per_person: z.coerce
+  amount_per_person: z
     .number({ message: "Amount per person must be a valid number" })
     .min(0, "Amount per person cannot be negative"),
   bank_name: z
@@ -164,7 +164,7 @@ export const semesterSchema = z
       .max(60),
     start_date: z.string().min(1, "Start date is required"),
     end_date: z.string().min(1, "End date is required"),
-    price: z.coerce
+    price: z
       .number({ message: "Price must be a valid number" })
       .min(0, "Price cannot be negative"),
     status: z.enum(["DRAFT", "ACTIVE", "CLOSED", "EXPIRED"]).default("ACTIVE"),

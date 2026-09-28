@@ -2,15 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { User, ShieldCheck, Clock, CheckCircle2, BookOpen, Sparkles, ArrowRight, Search } from "lucide-react";
+import { Clock, CheckCircle2, BookOpen, Sparkles, Search } from "lucide-react";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicFooter } from "@/components/academic/academic-footer";
-import { initialSemesters } from "@/data/academic";
+
+interface ActivePlan {
+  email: string;
+  semesterName: string;
+  status: string;
+  startsAt: string;
+  expiresAt: string;
+  accessLevel: string;
+}
 
 export default function AcademicAccountPage() {
   const [email, setEmail] = useState("");
   const [searched, setSearched] = useState(false);
-  const [activePlan, setActivePlan] = useState<any | null>(null);
+  const [activePlan, setActivePlan] = useState<ActivePlan | null>(null);
 
   const handleLookup = (e: React.FormEvent) => {
     e.preventDefault();

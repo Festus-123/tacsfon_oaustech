@@ -156,7 +156,6 @@ export function PaymentList({ initialRequests }: PaymentListProps) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((req) => {
             const isClosed = req.status === "CLOSED";
-            const isExpired = req.status === "EXPIRED";
             const isActive = req.status === "ACTIVE";
 
             return (

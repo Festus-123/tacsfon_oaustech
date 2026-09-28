@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, AlertCircle, BookOpen, ArrowRight, Sparkles } from "lucide-react";
+import { CheckCircle2, AlertCircle, BookOpen, ArrowRight } from "lucide-react";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicFooter } from "@/components/academic/academic-footer";
 

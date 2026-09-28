@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, ArrowLeft, AlertCircle, Info, ShieldCheck } from "lucide-react";
+import { ArrowLeft, AlertCircle, Info, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { paymentRequestSchema, PaymentRequestFormData } from "@/lib/validation/schemas";
 import { donationConfig } from "@/data/donation";
@@ -140,7 +140,7 @@ export function PaymentForm() {
                 min="0"
                 step="50"
                 placeholder="1000"
-                {...register("amount_per_person")}
+                {...register("amount_per_person", { valueAsNumber: true })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-forest-800"
               />
               {errors.amount_per_person && (

@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Sparkles, ShieldCheck, Mail, Phone, Lock, Calendar, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Sparkles, ShieldCheck, Mail, Phone, Calendar, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicFooter } from "@/components/academic/academic-footer";
 import { academicSupport } from "@/data/academic";
 
 export default function AcademicSubscribePage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 

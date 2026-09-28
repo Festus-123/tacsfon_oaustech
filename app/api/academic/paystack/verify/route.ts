@@ -31,9 +31,10 @@ export async function GET(request: NextRequest) {
     try {
       const verifyRes = await verifyPaystackTransaction(reference);
       if (verifyRes.status && verifyRes.data?.status === "success") {
+        const metadata = verifyRes.data.metadata as Record<string, unknown> | undefined;
         const customerEmail =
           verifyRes.data.customer?.email ||
-          (verifyRes.data.metadata as any)?.userEmail ||
+          (typeof metadata?.userEmail === "string" ? metadata.userEmail : undefined) ||
           emailParam ||
           "student@oaustech.edu.ng";
 

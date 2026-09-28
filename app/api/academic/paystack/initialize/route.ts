@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       authorization_url: paystackRes.data.authorization_url,
       reference,
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Paystack initialize error:", err);
     // Fallback simulation for offline testing
     const email = "student@oaustech.edu.ng";

@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Calendar, Check, Clock, AlertCircle, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Semester, AcademicSession } from "@/data/academic";
 import { Button } from "@/components/ui/button";
+
+const DEFAULT_START_DATE = "2026-10-12";
+const DEFAULT_END_DATE = "2027-01-11";
+
+function generateSemesterId(): string {
+  return `sem-${Date.now()}`;
+}
 
 interface SemesterManagerProps {
   initialSemesters: Semester[];
@@ -18,10 +25,10 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
   const [formData, setFormData] = useState({
     academic_session_id: sessions[0]?.id || "session-2024-2025",
     name: "First Semester",
-    start_date: new Date().toISOString().split("T")[0],
-    end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    start_date: DEFAULT_START_DATE,
+    end_date: DEFAULT_END_DATE,
     price: 1500,
-    status: "ACTIVE" as const,
+    status: "ACTIVE" as Semester["status"],
     description: "",
   });
 
@@ -34,7 +41,7 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
 
     const sessionObj = sessions.find((s) => s.id === formData.academic_session_id);
     const newSem: Semester = {
-      id: `sem-${Date.now()}`,
+      id: generateSemesterId(),
       academic_session_id: formData.academic_session_id,
       academic_session_name: sessionObj?.name || "2024/2025",
       name: formData.name,
@@ -52,7 +59,7 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
     setShowModal(false);
   };
 
-  const handleStatusChange = (id: string, newStatus: any) => {
+  const handleStatusChange = (id: string, newStatus: Semester["status"]) => {
     setSemesters((prev) =>
       prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
@@ -232,7 +239,7 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
                 <label className="font-semibold text-stone-700 uppercase">Initial Status</label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as Semester["status"] })}
                   className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-stone-800"
                 >
                   <option value="ACTIVE">ACTIVE (Immediate checkout offer)</option>

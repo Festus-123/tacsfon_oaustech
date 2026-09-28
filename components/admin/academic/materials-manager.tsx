@@ -7,14 +7,9 @@ import {
   Upload,
   FileText,
   Check,
-  AlertCircle,
   Eye,
   Trash2,
-  Lock,
-  Sparkles,
   Info,
-  Calendar,
-  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -25,8 +20,11 @@ import {
   Course,
   Semester,
 } from "@/data/academic";
-import { parseNormalizedFilename, ParsedFilenameMetadata } from "@/lib/supabase/academic";
-import { Button } from "@/components/ui/button";
+import { parseNormalizedFilename, ParsedFilenameMetadata } from "@/lib/academic/parser";
+
+function generateMaterialId(): string {
+  return `mat-${Date.now()}`;
+}
 
 interface MaterialsManagerProps {
   initialMaterials: AcademicMaterial[];
@@ -121,7 +119,7 @@ export function MaterialsManager({
     const semesterObj = semesters.find((s) => s.id === item.semesterId);
 
     const newMaterial: AcademicMaterial = {
-      id: `mat-${Date.now()}`,
+      id: generateMaterialId(),
       title: item.title,
       material_type_id: item.materialTypeId,
       material_type_name: typeObj?.name,

@@ -10,8 +10,6 @@ import {
   ShieldCheck,
   Calendar,
   GraduationCap,
-  Info,
-  CheckCircle2,
 } from "lucide-react";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicFooter } from "@/components/academic/academic-footer";

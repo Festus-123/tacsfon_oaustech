@@ -11,7 +11,6 @@ import {
   Download,
   ExternalLink,
   Users,
-  Clock,
   Ban,
   Trash2,
   FileSpreadsheet,
@@ -268,9 +267,12 @@ export function PaymentDetail({ payment, qrDataUrl, participants }: PaymentDetai
 
             {qrDataUrl ? (
               <div className="inline-block p-2 bg-stone-50 rounded-xl border border-stone-200 shadow-2xs">
-                <img
+                <Image
                   src={qrDataUrl}
                   alt={`QR code for ${payment.programme_name}`}
+                  width={192}
+                  height={192}
+                  unoptimized
                   className="w-48 h-48 mx-auto"
                 />
               </div>

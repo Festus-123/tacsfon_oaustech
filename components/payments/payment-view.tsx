@@ -11,8 +11,6 @@ import {
   ShieldCheck,
   Building2,
   Calendar,
-  Sparkles,
-  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PaymentRequest } from "@/data/payments";
