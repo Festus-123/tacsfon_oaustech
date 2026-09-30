@@ -3,18 +3,12 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  FileText,
-  BookOpen,
-  Layers,
   Archive,
   Search,
   Filter,
   Eye,
-  Lock,
-  ChevronRight,
   GraduationCap,
   Calendar,
-  Building,
 } from "lucide-react";
 import {
   AcademicMaterial,
@@ -333,7 +327,7 @@ export function MaterialBrowser({
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white text-xs font-semibold transition"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Read Preview</span>
+                    <span>{hasActiveAccess ? "Open Reader" : "Read Preview"}</span>
                   </Link>
                 </div>
               </div>

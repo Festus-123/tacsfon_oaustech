@@ -128,7 +128,7 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
                     <td className="py-3.5 px-4">
                       <select
                         value={sem.status}
-                        onChange={(e) => handleStatusChange(sem.id, e.target.value)}
+                        onChange={(e) => handleStatusChange(sem.id, e.target.value as Semester["status"])}
                         className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border focus:outline-none cursor-pointer ${
                           isActive
                             ? "bg-emerald-50 text-emerald-800 border-emerald-200"

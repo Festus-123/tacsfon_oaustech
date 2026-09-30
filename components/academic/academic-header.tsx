@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, ArrowLeft, Sparkles, User, ShieldCheck } from "lucide-react";
+import { BookOpen, ArrowLeft, Sparkles, User } from "lucide-react";
 import { Semester } from "@/data/academic";
 
 interface AcademicHeaderProps {
@@ -10,7 +10,7 @@ interface AcademicHeaderProps {
   userEmail?: string | null;
 }
 
-export function AcademicHeader({ activeSemester, userEmail }: AcademicHeaderProps) {
+export function AcademicHeader({ activeSemester }: AcademicHeaderProps) {
   const pathname = usePathname();
 
   return (

@@ -59,7 +59,6 @@ export function MaterialsManager({
 }: MaterialsManagerProps) {
   const [materials, setMaterials] = useState<AcademicMaterial[]>(initialMaterials);
   const [stagedUploads, setStagedUploads] = useState<StagedUpload[]>([]);
-  const [showUploadModal, setShowUploadModal] = useState(false);
   const [search, setSearch] = useState("");
 
   const defaultSemester = semesters[0]?.id || "sem-2024-first";
@@ -95,7 +94,6 @@ export function MaterialsManager({
     });
 
     setStagedUploads((prev) => [...newStaged, ...prev]);
-    setShowUploadModal(true);
     toast.info(`${files.length} file(s) parsed for metadata review.`);
   };
 

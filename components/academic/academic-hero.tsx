@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, BookOpen, CheckCircle2, ArrowRight, ShieldCheck, Calendar, Layers } from "lucide-react";
+import { Sparkles, BookOpen, CheckCircle2, Calendar } from "lucide-react";
 import { Semester } from "@/data/academic";
 
 interface AcademicHeroProps {

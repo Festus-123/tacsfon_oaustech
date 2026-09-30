@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { images } from "@/data/images";
 import { fellowshipContent } from "@/data/content";
 import { DonationModal } from "@/components/donation/donation-modal";
-import { Menu, X, Heart } from "lucide-react";
+import { Menu, X, Heart, BookOpen } from "lucide-react";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -75,8 +75,17 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right CTA Area: Donate */}
-        <div className="hidden sm:flex items-center gap-3">
+        {/* Right CTA Area: Academic Hub & Donate */}
+        <div className="hidden sm:flex items-center gap-2.5">
+          <Link
+            href="/academic"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-forest-900/90 hover:text-blue-700 bg-forest-50/80 hover:bg-blue-50 border border-forest-800/15 transition-colors"
+            title="Academic Hub — Curated Course Materials & Past Questions"
+          >
+            <BookOpen className="h-3.5 w-3.5 text-blue-600" />
+            <span>Academic Hub</span>
+          </Link>
+
           <DonationModal
             trigger={
               <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold bg-forest-800 text-white hover:bg-forest-900 transition-all border border-forest-700/60 shadow-2xs active:scale-[0.98] cursor-pointer">
@@ -138,7 +147,21 @@ export function Navbar() {
               );
             })}
 
-            <div className="pt-3 border-t border-forest-100">
+            <div className="pt-2 border-t border-forest-100/70 space-y-2">
+              <Link
+                href="/academic"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-between py-2.5 px-4 rounded-lg text-xs font-semibold text-stone-800 bg-stone-50 border border-stone-200/80 hover:bg-blue-50 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-blue-600" />
+                  <span>Academic Hub</span>
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold uppercase">
+                  Past Questions & Notes
+                </span>
+              </Link>
+
               <DonationModal
                 trigger={
                   <button

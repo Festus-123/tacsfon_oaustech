@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Play, FileText, ImageIcon, ShieldCheck, Sparkles, Eye } from "lucide-react";
+import { Play, FileText, ImageIcon, ShieldCheck, Eye } from "lucide-react";
 import { DemoMaterial } from "@/data/academic";
 
 interface DemoSectionProps {
@@ -13,7 +13,6 @@ export function AcademicDemoSection({ demos }: DemoSectionProps) {
   const [activeTab, setActiveTab] = useState<"video" | "pdf" | "image">("video");
 
   const videoDemo = demos.find((d) => d.type === "video");
-  const pdfDemo = demos.find((d) => d.type === "pdf");
   const imageDemo = demos.find((d) => d.type === "image");
 
   return (

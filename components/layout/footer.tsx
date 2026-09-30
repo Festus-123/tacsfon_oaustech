@@ -181,6 +181,17 @@ export function Footer() {
                   Contact Us
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/academic"
+                  className="text-forest-200/80 hover:text-gold-300 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Academic Hub</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-200 border border-blue-700/50">
+                    Student Portal
+                  </span>
+                </Link>
+              </li>
               <li className="pt-2">
                 <Link
                   href="/admin/login"
