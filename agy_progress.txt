@@ -911,3 +911,5 @@ expand)
   Full Next.js production build succeeded with 36/36 routes compiled and statically optimized.
 ● Bash(git commit -m "fix(academic): resolve typescript type casting and linter warnings, integrate subtle academic hub links into navbar and footer")
   Work committed to branch main.
+
+

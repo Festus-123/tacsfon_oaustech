@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navigation/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Toaster } from "sonner";
 
 const serifFont = Playfair_Display({
@@ -116,9 +114,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-canvas text-ink font-sans">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
         <Toaster position="top-right" richColors />
       </body>
     </html>
