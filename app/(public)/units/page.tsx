@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { fellowshipContent } from "@/data/content";
 import { UnitCard } from "@/components/units/unit-card";
 import { Users, Sparkles, Heart } from "lucide-react";
@@ -7,7 +7,7 @@ import { DonationModal } from "@/components/donation/donation-modal";
 export const metadata: Metadata = {
   title: "Fellowship Units",
   description:
-    "Explore the 10 service units within TACSFON (OAUSTECH): Bible Study, Prayer, Choir, Drama, Organizing, Academic, Ushering, Evangelism, Brothers, and Sisters.",
+    "Explore the 11 service units within TACSFON (OAUSTECH): Bible Study, Prayer, Choir, Drama, Organizing, Academic, Ushering, Evangelism, Brothers, Sisters, and Media.",
 };
 
 export default function UnitsPage() {

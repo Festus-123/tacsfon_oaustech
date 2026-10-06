@@ -13,8 +13,8 @@ import {
 } from "@/lib/supabase/academic";
 
 export const metadata: Metadata = {
-  title: "Course Materials & Upload Review | TACSFON Admin",
-  description: "Upload normalized academic documents, review metadata, and publish materials.",
+  title: "Course Materials & Raw Ingestion | TACSFON Admin",
+  description: "Raw document ingestion powered by Nebula AI, metadata review, and published Academic Hub materials.",
 };
 
 export default async function AdminMaterialsPage() {

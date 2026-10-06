@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import Image from "next/image";
 import { UnitItem } from "@/data/content";
@@ -13,6 +13,7 @@ import {
   Layers,
   Shield,
   Sparkles,
+  Camera,
 } from "lucide-react";
 
 interface UnitCardProps {
@@ -41,6 +42,8 @@ export function UnitCard({ unit, featured = false }: UnitCardProps) {
         return <Layers className="h-5 w-5" />;
       case "Shield":
         return <Shield className="h-5 w-5" />;
+      case "Camera":
+        return <Camera className="h-5 w-5" />;
       case "Sparkles":
       default:
         return <Sparkles className="h-5 w-5" />;

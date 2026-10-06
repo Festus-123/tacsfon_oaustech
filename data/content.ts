@@ -289,7 +289,24 @@ export const fellowshipContent = {
       ],
       regularActivity: "Sisters' Fellowship Gatherings",
       iconName: "Sparkles",
-      image: "/assets/Screenshot_20260907_231408_Instagram.jpg",
+      image: "/assets/Screenshot_20261002_005214_Instagram.jpg",
+    },
+    {
+      id: "media",
+      name: "Media Unit",
+      shortDescription:
+        "Managing audiovisual production, live coverage, photography, projection, and digital ministry.",
+      fullDescription:
+        "The Media Unit is responsible for the digital presentation, audiovisual technology, live coverage, photography, videography, and social media presence of TACSFON OAUSTECH. They project the Gospel through modern media technology and preserve memories of fellowship gatherings.",
+      responsibilities: [
+        "Captures high-definition photography and video recordings during all services and programs",
+        "Operates sanctuary sound systems, projection of hymns, scriptures, and announcements",
+        "Designs visually engaging graphics, flyers, and promotional media for fellowship activities",
+        "Curates and maintains fellowship social media channels and digital communications",
+      ],
+      regularActivity: "Media & Audiovisual Production",
+      iconName: "Camera",
+      image: "/assets/Church photography_ worship + serve team.jfif",
     },
   ],
 

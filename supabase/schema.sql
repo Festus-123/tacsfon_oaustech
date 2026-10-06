@@ -404,3 +404,43 @@ VALUES
   ('Workbooks', 'workbooks', 'Structured worksheets, exercises, and problem sets.'),
   ('Materials', 'materials', 'Supplementary reading materials, reference slides, and textbooks.')
 ON CONFLICT (slug) DO NOTHING;
+
+-- ============================================================
+-- 8. ACADEMIC HUB UPLOAD SECURITY KEY & RECOVERY
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.academic_hub_security (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  active_key_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  rotated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.academic_hub_security ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admin full academic_hub_security"
+  ON public.academic_hub_security
+  FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE TABLE IF NOT EXISTS public.academic_hub_recovery_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  token TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.academic_hub_recovery_tokens ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admin full academic_hub_recovery_tokens"
+  ON public.academic_hub_recovery_tokens
+  FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
