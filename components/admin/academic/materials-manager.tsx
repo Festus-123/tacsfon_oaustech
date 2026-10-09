@@ -5,16 +5,12 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Upload,
-  FileText,
   Check,
   Eye,
-  Trash2,
-  Info,
   Lock,
   Unlock,
   KeyRound,
   AlertTriangle,
-  RotateCcw,
   Sparkles,
   Send,
   HelpCircle,
@@ -93,27 +89,25 @@ export function MaterialsManager({
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const defaultSemester = semesters[0]?.id || "sem-2024-first";
-
   // Check Security Gate on Load
   useEffect(() => {
+    async function checkSecurityStatus() {
+      try {
+        const res = await fetch("/api/admin/academic/security/status");
+        const data = await res.json();
+        setIsUnlocked(!!data.unlocked);
+        if (data.question) {
+          setRecoveryQuestion(data.question);
+        }
+      } catch {
+        setIsUnlocked(false);
+      } finally {
+        setCheckingSecurity(false);
+      }
+    }
+
     checkSecurityStatus();
   }, []);
-
-  async function checkSecurityStatus() {
-    try {
-      const res = await fetch("/api/admin/academic/security/status");
-      const data = await res.json();
-      setIsUnlocked(!!data.unlocked);
-      if (data.question) {
-        setRecoveryQuestion(data.question);
-      }
-    } catch {
-      setIsUnlocked(false);
-    } finally {
-      setCheckingSecurity(false);
-    }
-  }
 
   // Handle Master Key Unlock
   async function handleUnlock(e: React.FormEvent) {
@@ -1201,6 +1195,7 @@ export function MaterialsManager({
                     <label className="block font-medium text-stone-700 mb-1">Course Code</label>
                     <input
                       type="text"
+                      list="course-suggestions"
                       placeholder="e.g. CSC 308 or MTH 101"
                       value={editForm.course || ""}
                       onChange={(e) =>
@@ -1208,6 +1203,13 @@ export function MaterialsManager({
                       }
                       className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white font-mono uppercase"
                     />
+                    <datalist id="course-suggestions">
+                      {courses.map((c) => (
+                        <option key={c.id} value={c.code}>
+                          {c.title}
+                        </option>
+                      ))}
+                    </datalist>
                   </div>
 
                   <div>
@@ -1224,6 +1226,25 @@ export function MaterialsManager({
                       <option value="2024/2025">2024/2025</option>
                       <option value="2025/2026">2025/2026</option>
                       <option value="2026/2027">2026/2027</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-stone-700 mb-1">
+                      Semester
+                    </label>
+                    <select
+                      value={editForm.semester || semesters[0]?.name || "First Semester"}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({ ...prev, semester: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                    >
+                      {semesters.map((s) => (
+                        <option key={s.id} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>

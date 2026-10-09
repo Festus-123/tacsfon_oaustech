@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     const files: File[] = [];
 
     for (const entry of formData.entries()) {
-      const [key, value] = entry;
+      const [, value] = entry;
       if (value instanceof File) {
         files.push(value);
       }

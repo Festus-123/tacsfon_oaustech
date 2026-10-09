@@ -1,4 +1,3 @@
-import crypto from "crypto";
 
 export interface RawUploadedFile {
   id: string;
@@ -213,7 +212,7 @@ function runSmartFallbackClassifier(
 
   // Step 2: Classify each group
   let index = 0;
-  for (const [key, groupFiles] of groupedBuckets.entries()) {
+  for (const [, groupFiles] of groupedBuckets.entries()) {
     index++;
     const primaryFile = groupFiles[0];
     const totalSize = groupFiles.reduce((acc, f) => acc + f.size, 0);
