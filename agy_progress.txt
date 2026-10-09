@@ -1182,3 +1182,18 @@ expand)
 
 ⚠ Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 166h58m37s.
 Error ID: ed1f4d3f-bfaf-4cbd-8564-99705a11df5e-230
+
+> continue execution in instruction.txt (assets/ and content.txt provides the necessary details) also see agy_progress.txt
+
+● Fixed React Hooks / immutability and variable access rules in components/admin/academic/materials-manager.tsx.
+● Removed unused icons (Trash2, Info, RotateCcw, FileText) and cleaned up variables in components/admin/academic/materials-manager.tsx and lib/nebula/client.ts.
+● Added Course code autocomplete suggestions and Semester selector dropdown in the metadata editing modal.
+● Verified all 11 Fellowship units, including the Media Unit with Camera icon, in data/content.ts, components/units/unit-card.tsx, and app/(public)/units/page.tsx.
+● Verified layout isolation between Public TACSFON layout (Navbar + Footer), Admin portal, and Academic Hub (#FDFBF7 cream + blue visual identity).
+● Synced all assets from assets/ to public/assets/ including all photography and flyers.
+● Verified Supabase PostgreSQL schema with RLS policies, tables for payment_requests, submissions, academic_sessions, semesters, materials, academic_hub_security, and recovery tokens.
+● Verified .env.example with all configuration variables documented.
+● Verified ESLint check: passed with 0 errors and 0 warnings (npm run lint).
+● Verified TypeScript check: passed with 0 errors (npx tsc --noEmit).
+● Verified Next.js Turbopack production build: 45/45 routes compiled, statically generated, and server-rendered successfully with 0 errors (npm run build).
+● Committed changes to git repository on branch main.
