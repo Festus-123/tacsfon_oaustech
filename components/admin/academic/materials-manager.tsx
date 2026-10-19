@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -33,6 +33,13 @@ import {
 } from "@/data/academic";
 import { NebulaDocumentGroup, NebulaClassification, formatNormalizedFilename } from "@/lib/nebula/client";
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+interface LocalFilePreview {
+  path: string;
+  name: string;
+  type: string;
+  url: string;
+}
 
 interface MaterialsManagerProps {
   initialMaterials: AcademicMaterial[];
@@ -85,6 +92,90 @@ export function MaterialsManager({
   const [editingGroup, setEditingGroup] = useState<NebulaDocumentGroup | null>(null);
   const [editForm, setEditForm] = useState<Partial<NebulaClassification>>({});
   const [isResubmitting, setIsResubmitting] = useState<boolean>(false);
+
+  // Local previews of uploaded files (object URLs from the admin's own device),
+  // keyed by storage path, which is also the file ID sent to Nebula.
+  const [filePreviews, setFilePreviews] = useState<LocalFilePreview[]>([]);
+  const previewsRef = useRef<LocalFilePreview[]>([]);
+
+  useEffect(() => {
+    previewsRef.current = filePreviews;
+  }, [filePreviews]);
+
+  useEffect(() => {
+    return () => previewsRef.current.forEach((preview) => URL.revokeObjectURL(preview.url));
+  }, []);
+
+  function getGroupPreviews(group: NebulaDocumentGroup): LocalFilePreview[] {
+    return group.source_file_ids
+      .map(
+        (id, i) =>
+          filePreviews.find((preview) => preview.path === id) ||
+          filePreviews.find((preview) => preview.name === group.original_filenames[i])
+      )
+      .filter((preview): preview is LocalFilePreview => !!preview);
+  }
+
+  function renderFilePreviews(group: NebulaDocumentGroup, compact: boolean) {
+    const previews = getGroupPreviews(group);
+
+    if (previews.length === 0) {
+      return compact ? null : (
+        <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4 text-center text-[11px] text-stone-500">
+          Preview unavailable. Previews only exist on the device and session that uploaded the file.
+        </div>
+      );
+    }
+
+    return (
+      <div className={`flex gap-3 overflow-x-auto ${compact ? "pb-1" : "pb-2"}`}>
+        {previews.map((preview, index) => {
+          const isImage = preview.type.startsWith("image/");
+          const isPdf = preview.type === "application/pdf" || preview.name.toLowerCase().endsWith(".pdf");
+
+          return (
+            <a
+              key={preview.path}
+              href={preview.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Open ${preview.name} in a new tab`}
+              className={`shrink-0 rounded-lg border border-stone-200 bg-stone-100 overflow-hidden flex flex-col ${
+                compact ? "w-16" : "w-56 sm:w-64"
+              }`}
+            >
+              <div className={`flex items-center justify-center bg-white ${compact ? "h-16" : "h-72"}`}>
+                {isImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- local blob: URL, not optimizable
+                  <img
+                    src={preview.url}
+                    alt={`Page ${index + 1}: ${preview.name}`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : isPdf && !compact ? (
+                  <iframe
+                    src={preview.url}
+                    title={`Page ${index + 1}: ${preview.name}`}
+                    className="w-full h-full pointer-events-none"
+                  />
+                ) : (
+                  <span className="text-[10px] font-bold uppercase text-stone-500">
+                    {preview.name.split(".").pop()}
+                  </span>
+                )}
+              </div>
+              {!compact && (
+                <div className="px-2 py-1.5 text-[10px] text-stone-600 truncate border-t border-stone-200">
+                  {previews.length > 1 ? `Page ${index + 1}: ` : ""}
+                  {preview.name}
+                </div>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    );
+  }
 
   // Published Filter
   const [search, setSearch] = useState("");
@@ -324,6 +415,15 @@ export function MaterialsManager({
       setIsolatedGroups((prev) => [...(result.isolated || []), ...prev]);
       setRejectedGroups((prev) => [...(result.rejected || []), ...prev]);
 
+      setFilePreviews((prev) => [
+        ...uploadedRefs.map((ref, index) => ({
+          path: ref.path,
+          name: ref.name,
+          type: ref.type,
+          url: URL.createObjectURL(selectedFiles[index]),
+        })),
+        ...prev,
+      ]);
       setSelectedFiles([]);
       toast.success(`Nebula analyzed ${selectedFiles.length} file(s)! Review ready.`);
 
@@ -917,7 +1017,7 @@ export function MaterialsManager({
                 {reviewTab === "approved" && approvedGroups.length > 0 && (
                   <button
                     onClick={handlePublishAllApproved}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-2xs flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-2xs flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0"
                   >
                     <Check className="h-4 w-4" />
                     Publish All Approved ({approvedGroups.length})
@@ -926,11 +1026,11 @@ export function MaterialsManager({
               </div>
 
               {/* Review Tabs */}
-              <div className="flex border-b border-stone-200 gap-2">
+              <div className="flex border-b border-stone-200 gap-2 overflow-x-auto">
                 <button
                   type="button"
                   onClick={() => setReviewTab("approved")}
-                  className={`pb-3 px-3 text-xs font-semibold transition-colors border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-xs font-semibold transition-colors border-b-2 flex items-center gap-2 shrink-0 whitespace-nowrap ${
                     reviewTab === "approved"
                       ? "border-emerald-600 text-emerald-950"
                       : "border-transparent text-stone-500 hover:text-stone-800"
@@ -946,7 +1046,7 @@ export function MaterialsManager({
                 <button
                   type="button"
                   onClick={() => setReviewTab("isolated")}
-                  className={`pb-3 px-3 text-xs font-semibold transition-colors border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-xs font-semibold transition-colors border-b-2 flex items-center gap-2 shrink-0 whitespace-nowrap ${
                     reviewTab === "isolated"
                       ? "border-amber-500 text-amber-950"
                       : "border-transparent text-stone-500 hover:text-stone-800"
@@ -962,7 +1062,7 @@ export function MaterialsManager({
                 <button
                   type="button"
                   onClick={() => setReviewTab("rejected")}
-                  className={`pb-3 px-3 text-xs font-semibold transition-colors border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-xs font-semibold transition-colors border-b-2 flex items-center gap-2 shrink-0 whitespace-nowrap ${
                     reviewTab === "rejected"
                       ? "border-red-500 text-red-950"
                       : "border-transparent text-stone-500 hover:text-stone-800"
@@ -989,7 +1089,7 @@ export function MaterialsManager({
                         key={group.group_id}
                         className="rounded-xl border border-emerald-200/80 bg-emerald-50/20 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
                       >
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-bold">
                               {group.classification.material_type}
@@ -1011,12 +1111,12 @@ export function MaterialsManager({
                             {group.proposed_filename}
                           </div>
 
-                          <div className="text-[11px] text-stone-500">
+                          <div className="text-[11px] text-stone-500 break-all">
                             Source: {group.original_filenames.join(", ")}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 self-end md:self-center">
+                        <div className="flex flex-wrap items-center gap-2 self-end md:self-center shrink-0">
                           <button
                             type="button"
                             onClick={() => openEditModal(group)}
@@ -1058,9 +1158,9 @@ export function MaterialsManager({
                         key={group.group_id}
                         className="rounded-xl border border-amber-300 bg-amber-50/40 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
                       >
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[11px] font-bold">
+                        <div className="space-y-2 min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[11px] font-bold shrink-0">
                               ISOLATED
                             </span>
                             <span className="text-xs text-amber-800 font-medium">
@@ -1072,12 +1172,14 @@ export function MaterialsManager({
                             Files: {group.original_filenames.join(", ")}
                           </div>
 
+                          {renderFilePreviews(group, true)}
+
                           <p className="text-[11px] text-stone-600">
                             Provide the course code or department to complete validation and publish.
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2 self-end md:self-center">
+                        <div className="flex flex-wrap items-center gap-2 self-end md:self-center shrink-0">
                           <button
                             type="button"
                             onClick={() => openEditModal(group)}
@@ -1112,8 +1214,8 @@ export function MaterialsManager({
                         key={group.group_id}
                         className="rounded-xl border border-stone-200 bg-stone-50/60 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                       >
-                        <div>
-                          <span className="font-semibold text-stone-800">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-stone-800 break-all">
                             {group.original_filenames.join(", ")}
                           </span>
                           <p className="text-red-700 text-[11px] mt-0.5">
@@ -1124,7 +1226,7 @@ export function MaterialsManager({
                         <button
                           type="button"
                           onClick={() => handleRestoreGroup(group)}
-                          className="px-3 py-1 rounded-md border border-stone-300 text-stone-700 hover:bg-stone-100 font-medium self-end sm:self-center"
+                          className="px-3 py-1 rounded-md border border-stone-300 text-stone-700 hover:bg-stone-100 font-medium self-end sm:self-center shrink-0"
                         >
                           Restore to Review
                         </button>
@@ -1139,7 +1241,7 @@ export function MaterialsManager({
           {/* EDIT / MISSING INFORMATION MODAL */}
           {editingGroup && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95">
+              <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl border border-stone-200 space-y-4 animate-in fade-in zoom-in-95">
                 <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                   <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
                     <FileQuestion className="h-5 w-5 text-blue-600" />
@@ -1153,8 +1255,36 @@ export function MaterialsManager({
                   </button>
                 </div>
 
-                <div className="text-xs text-stone-500 font-mono">
+                <div className="text-xs text-stone-500 font-mono break-all">
                   Source: {editingGroup.original_filenames.join(", ")}
+                </div>
+
+                {editingGroup.status === "isolated" && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 space-y-1">
+                    <div className="font-semibold flex items-center gap-1.5">
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      {editingGroup.isolation_reason || "Nebula could not classify this document."}
+                    </div>
+                    {editingGroup.warnings.length > 0 && (
+                      <ul className="list-disc pl-5 text-amber-800 space-y-0.5">
+                        {editingGroup.warnings.map((warning) => (
+                          <li key={warning}>{warning}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <p className="text-amber-800">
+                      Check the document below and fill in the missing details.
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <div className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+                    <Eye className="h-3.5 w-3.5" />
+                    Document Preview
+                    <span className="font-normal text-stone-400">(tap to open full size)</span>
+                  </div>
+                  {renderFilePreviews(editingGroup, false)}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
