@@ -11,6 +11,14 @@ function generateCourseId(): string {
   return `course-${Date.now()}`;
 }
 
+function generateDepartmentId(): string {
+  return `dept-${Date.now()}`;
+}
+
+function generateSchoolId(): string {
+  return `school-${Date.now()}`;
+}
+
 interface StructureManagerProps {
   initialSchools: School[];
   initialDepartments: Department[];
@@ -23,8 +31,8 @@ export function StructureManager({
   initialCourses,
 }: StructureManagerProps) {
   const [activeTab, setActiveTab] = useState<"courses" | "departments" | "schools">("courses");
-  const schools = initialSchools;
-  const departments = initialDepartments;
+  const [schools, setSchools] = useState<School[]>(initialSchools);
+  const [departments, setDepartments] = useState<Department[]>(initialDepartments);
   const [courses, setCourses] = useState<Course[]>(initialCourses);
 
   // New Course Modal State
@@ -66,6 +74,74 @@ export function StructureManager({
     });
   };
 
+  // New Department Modal State
+  const [showDepartmentModal, setShowDepartmentModal] = useState(false);
+  const [departmentForm, setDepartmentForm] = useState({
+    school_id: schools[0]?.id || "",
+    name: "",
+    code: "",
+  });
+
+  const handleCreateDepartment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!departmentForm.school_id) {
+      toast.error("Please add a school / faculty first.");
+      return;
+    }
+    if (!departmentForm.name.trim() || !departmentForm.code.trim()) {
+      toast.error("Please provide both department name and code.");
+      return;
+    }
+
+    const schoolObj = schools.find((s) => s.id === departmentForm.school_id);
+    const newDepartment: Department = {
+      id: generateDepartmentId(),
+      school_id: departmentForm.school_id,
+      school_name: schoolObj?.name || "School",
+      name: departmentForm.name.trim(),
+      code: departmentForm.code.toUpperCase().trim(),
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+
+    setDepartments((prev) => [newDepartment, ...prev]);
+    toast.success(`Department ${newDepartment.name} added!`);
+    setShowDepartmentModal(false);
+    setDepartmentForm({
+      school_id: schools[0]?.id || "",
+      name: "",
+      code: "",
+    });
+  };
+
+  // New School / Faculty Modal State
+  const [showSchoolModal, setShowSchoolModal] = useState(false);
+  const [schoolForm, setSchoolForm] = useState({
+    name: "",
+    code: "",
+  });
+
+  const handleCreateSchool = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!schoolForm.name.trim() || !schoolForm.code.trim()) {
+      toast.error("Please provide both faculty name and code.");
+      return;
+    }
+
+    const newSchool: School = {
+      id: generateSchoolId(),
+      name: schoolForm.name.trim(),
+      code: schoolForm.code.toLowerCase().trim().replace(/\s+/g, "-"),
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+
+    setSchools((prev) => [newSchool, ...prev]);
+    toast.success(`Faculty ${newSchool.name} added!`);
+    setShowSchoolModal(false);
+    setSchoolForm({ name: "", code: "" });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -88,11 +164,35 @@ export function StructureManager({
         <div className="flex items-center gap-2">
           {activeTab === "courses" && (
             <Button
-              onClick={() => setShowCourseModal(true)}
+              onClick={() => {
+                setCourseForm((prev) => ({ ...prev, department_id: prev.department_id || departments[0]?.id || "" }));
+                setShowCourseModal(true);
+              }}
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Add Course</span>
+            </Button>
+          )}
+          {activeTab === "departments" && (
+            <Button
+              onClick={() => {
+                setDepartmentForm((prev) => ({ ...prev, school_id: prev.school_id || schools[0]?.id || "" }));
+                setShowDepartmentModal(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Department</span>
+            </Button>
+          )}
+          {activeTab === "schools" && (
+            <Button
+              onClick={() => setShowSchoolModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Faculty</span>
             </Button>
           )}
         </div>
@@ -302,6 +402,117 @@ export function StructureManager({
                 </button>
                 <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
                   Add Course
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Department Modal */}
+      {showDepartmentModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 max-w-md w-full shadow-xl space-y-4">
+            <h2 className="text-xl font-serif font-bold text-stone-900">Add Department</h2>
+
+            <form onSubmit={handleCreateDepartment} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-semibold text-stone-700 uppercase">School / Faculty</label>
+                <select
+                  value={departmentForm.school_id}
+                  onChange={(e) => setDepartmentForm({ ...departmentForm, school_id: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-stone-800"
+                >
+                  {schools.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-stone-700 uppercase">Department Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Computer Science"
+                  required
+                  value={departmentForm.name}
+                  onChange={(e) => setDepartmentForm({ ...departmentForm, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-stone-700 uppercase">Department Code</label>
+                <input
+                  type="text"
+                  placeholder="e.g. CSC"
+                  required
+                  value={departmentForm.code}
+                  onChange={(e) => setDepartmentForm({ ...departmentForm, code: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 uppercase font-mono"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDepartmentModal(false)}
+                  className="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100"
+                >
+                  Cancel
+                </button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Add Department
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* School / Faculty Modal */}
+      {showSchoolModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 max-w-md w-full shadow-xl space-y-4">
+            <h2 className="text-xl font-serif font-bold text-stone-900">Add School / Faculty</h2>
+
+            <form onSubmit={handleCreateSchool} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-semibold text-stone-700 uppercase">Faculty Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. School of Computing"
+                  required
+                  value={schoolForm.name}
+                  onChange={(e) => setSchoolForm({ ...schoolForm, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-stone-700 uppercase">Code Slug</label>
+                <input
+                  type="text"
+                  placeholder="e.g. soc"
+                  required
+                  value={schoolForm.code}
+                  onChange={(e) => setSchoolForm({ ...schoolForm, code: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 font-mono"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSchoolModal(false)}
+                  className="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100"
+                >
+                  Cancel
+                </button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Add Faculty
                 </Button>
               </div>
             </form>
