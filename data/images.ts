@@ -11,8 +11,8 @@ export const images = {
     bibleStudy: "/assets/bible study.jpg",
   },
   photography: {
-    heroStudents: "/assets/41306521578895022.jfif",
-    worshipProduction: "/assets/Church photography_ worship + serve team.jfif",
+    heroStudents: "/assets/hero-students.jpg",
+    worshipProduction: "/assets/worship-serve-team.jpg",
     praiseSession: "/assets/Screenshot_20260907_231426_Instagram.jpg",
     fellowshipCongregation: "/assets/Screenshot_20260907_231337_Instagram.jpg",
     ferventPrayer: "/assets/Screenshot_20260907_231307_Instagram.jpg",

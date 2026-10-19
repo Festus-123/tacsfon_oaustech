@@ -2,21 +2,38 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { School, Department, Course } from "@/data/academic";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-function generateCourseId(): string {
-  return `course-${Date.now()}`;
-}
+type StructureEntity = "schools" | "departments" | "courses";
 
-function generateDepartmentId(): string {
-  return `dept-${Date.now()}`;
-}
-
-function generateSchoolId(): string {
-  return `school-${Date.now()}`;
+async function saveStructureRecord<T>(entity: StructureEntity, payload: object): Promise<T | null> {
+  try {
+    const res = await fetch(`/api/admin/academic/structure/${entity}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      toast.error(data.error || "Failed to save record.");
+      return null;
+    }
+    return data.record as T;
+  } catch {
+    toast.error("Network error while saving record.");
+    return null;
+  }
 }
 
 interface StructureManagerProps {
@@ -44,25 +61,31 @@ export function StructureManager({
     level: 300,
   });
 
-  const handleCreateCourse = (e: React.FormEvent) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!courseForm.department_id) {
+      toast.error("Please add a department first.");
+      return;
+    }
     if (!courseForm.code.trim() || !courseForm.title.trim()) {
       toast.error("Please provide both course code and title.");
       return;
     }
 
-    const deptObj = departments.find((d) => d.id === courseForm.department_id);
-    const newCourse: Course = {
-      id: generateCourseId(),
+    setIsSaving(true);
+    type CourseRecord = Course & { departments?: { name?: string } };
+    const saved = await saveStructureRecord<CourseRecord>("courses", {
       department_id: courseForm.department_id,
-      department_name: deptObj?.name || "Department",
-      code: courseForm.code.toUpperCase().trim(),
+      code: courseForm.code.trim(),
       title: courseForm.title.trim(),
       level: Number(courseForm.level),
-      is_active: true,
-      created_at: new Date().toISOString(),
-    };
+    });
+    setIsSaving(false);
+    if (!saved) return;
 
+    const newCourse: Course = { ...saved, department_name: saved.departments?.name };
     setCourses((prev) => [newCourse, ...prev]);
     toast.success(`Course ${newCourse.code} added!`);
     setShowCourseModal(false);
@@ -82,7 +105,7 @@ export function StructureManager({
     code: "",
   });
 
-  const handleCreateDepartment = (e: React.FormEvent) => {
+  const handleCreateDepartment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!departmentForm.school_id) {
       toast.error("Please add a school / faculty first.");
@@ -93,17 +116,17 @@ export function StructureManager({
       return;
     }
 
-    const schoolObj = schools.find((s) => s.id === departmentForm.school_id);
-    const newDepartment: Department = {
-      id: generateDepartmentId(),
+    setIsSaving(true);
+    type DepartmentRecord = Department & { schools?: { name?: string } };
+    const saved = await saveStructureRecord<DepartmentRecord>("departments", {
       school_id: departmentForm.school_id,
-      school_name: schoolObj?.name || "School",
       name: departmentForm.name.trim(),
-      code: departmentForm.code.toUpperCase().trim(),
-      is_active: true,
-      created_at: new Date().toISOString(),
-    };
+      code: departmentForm.code.trim(),
+    });
+    setIsSaving(false);
+    if (!saved) return;
 
+    const newDepartment: Department = { ...saved, school_name: saved.schools?.name };
     setDepartments((prev) => [newDepartment, ...prev]);
     toast.success(`Department ${newDepartment.name} added!`);
     setShowDepartmentModal(false);
@@ -121,25 +144,70 @@ export function StructureManager({
     code: "",
   });
 
-  const handleCreateSchool = (e: React.FormEvent) => {
+  const handleCreateSchool = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolForm.name.trim() || !schoolForm.code.trim()) {
       toast.error("Please provide both faculty name and code.");
       return;
     }
 
-    const newSchool: School = {
-      id: generateSchoolId(),
+    setIsSaving(true);
+    const saved = await saveStructureRecord<School>("schools", {
       name: schoolForm.name.trim(),
-      code: schoolForm.code.toLowerCase().trim().replace(/\s+/g, "-"),
-      is_active: true,
-      created_at: new Date().toISOString(),
-    };
+      code: schoolForm.code.trim(),
+    });
+    setIsSaving(false);
+    if (!saved) return;
 
-    setSchools((prev) => [newSchool, ...prev]);
-    toast.success(`Faculty ${newSchool.name} added!`);
+    setSchools((prev) => [saved, ...prev]);
+    toast.success(`Faculty ${saved.name} added!`);
     setShowSchoolModal(false);
     setSchoolForm({ name: "", code: "" });
+  };
+
+  // Delete Confirmation State
+  const [deleteTarget, setDeleteTarget] = useState<{
+    entity: StructureEntity;
+    id: string;
+    label: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { entity, id, label } = deleteTarget;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`/api/admin/academic/structure/${entity}/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to delete record.");
+        return;
+      }
+
+      // Mirror the database ON DELETE CASCADE locally
+      if (entity === "schools") {
+        const removedDeptIds = departments.filter((d) => d.school_id === id).map((d) => d.id);
+        setSchools((prev) => prev.filter((s) => s.id !== id));
+        setDepartments((prev) => prev.filter((d) => d.school_id !== id));
+        setCourses((prev) => prev.filter((c) => !removedDeptIds.includes(c.department_id)));
+      } else if (entity === "departments") {
+        setDepartments((prev) => prev.filter((d) => d.id !== id));
+        setCourses((prev) => prev.filter((c) => c.department_id !== id));
+      } else {
+        setCourses((prev) => prev.filter((c) => c.id !== id));
+      }
+
+      toast.success(`${label} deleted.`);
+      setDeleteTarget(null);
+    } catch {
+      toast.error("Network error while deleting record.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -247,6 +315,7 @@ export function StructureManager({
                   <th className="py-3 px-4">Level</th>
                   <th className="py-3 px-4">Department</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -261,8 +330,26 @@ export function StructureManager({
                         Active
                       </span>
                     </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget({ entity: "courses", id: course.id, label: course.code })}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        aria-label={`Delete ${course.code}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
+                {courses.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-10 px-4 text-center text-stone-500">
+                      No courses yet. Click &quot;Add Course&quot; to create one.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -280,6 +367,7 @@ export function StructureManager({
                   <th className="py-3 px-4">Code Identifier</th>
                   <th className="py-3 px-4">Faculty / School</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -293,8 +381,26 @@ export function StructureManager({
                         Active
                       </span>
                     </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget({ entity: "departments", id: dept.id, label: dept.name })}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        aria-label={`Delete ${dept.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
+                {departments.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-10 px-4 text-center text-stone-500">
+                      No departments yet. Click &quot;Add Department&quot; to create one.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -311,6 +417,7 @@ export function StructureManager({
                   <th className="py-3 px-4">School / Faculty Name</th>
                   <th className="py-3 px-4">Code Slug</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -323,8 +430,26 @@ export function StructureManager({
                         Active
                       </span>
                     </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget({ entity: "schools", id: school.id, label: school.name })}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        aria-label={`Delete ${school.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
+                {schools.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-10 px-4 text-center text-stone-500">
+                      No faculties yet. Click &quot;Add Faculty&quot; to create one.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -400,8 +525,8 @@ export function StructureManager({
                 >
                   Cancel
                 </button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Add Course
+                <Button type="submit" disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  {isSaving ? "Saving..." : "Add Course"}
                 </Button>
               </div>
             </form>
@@ -463,8 +588,8 @@ export function StructureManager({
                 >
                   Cancel
                 </button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Add Department
+                <Button type="submit" disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  {isSaving ? "Saving..." : "Add Department"}
                 </Button>
               </div>
             </form>
@@ -511,14 +636,61 @@ export function StructureManager({
                 >
                   Cancel
                 </button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Add Faculty
+                <Button type="submit" disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  {isSaving ? "Saving..." : "Add Faculty"}
                 </Button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && !isDeleting && setDeleteTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-red-600 mb-1">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle className="text-lg">Delete {deleteTarget?.label}?</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-stone-600">
+              {deleteTarget?.entity === "schools" &&
+                "This permanently deletes the faculty and every department and course under it. "}
+              {deleteTarget?.entity === "departments" &&
+                "This permanently deletes the department and every course under it. "}
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteTarget(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  Deleting...
+                </>
+              ) : (
+                "Yes, Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

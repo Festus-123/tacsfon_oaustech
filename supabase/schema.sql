@@ -444,3 +444,18 @@ CREATE POLICY "Admin full academic_hub_recovery_tokens"
   USING (true)
   WITH CHECK (true);
 
+
+-- ============================================================
+-- 9. ACADEMIC MATERIALS STORAGE POLICIES
+-- Raw uploads go from the admin's browser to 'ingestion/<request_id>/...'
+-- (Vercel rejects API request bodies over 4.5 MB), then approval moves
+-- them to '<session>/<final filename>'. The bucket stays private.
+-- ============================================================
+
+DROP POLICY IF EXISTS "Authenticated users manage academic-materials" ON storage.objects;
+CREATE POLICY "Authenticated users manage academic-materials"
+  ON storage.objects
+  FOR ALL
+  TO authenticated
+  USING (bucket_id = 'academic-materials')
+  WITH CHECK (bucket_id = 'academic-materials');

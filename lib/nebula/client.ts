@@ -52,6 +52,9 @@ export interface NebulaSortResult {
   approved: NebulaDocumentGroup[];
   isolated: NebulaDocumentGroup[];
   rejected: NebulaDocumentGroup[];
+  // Set by TACSFON: whether Nebula answered or the local fallback classifier ran, and why
+  source?: "nebula" | "fallback";
+  notice?: string;
 }
 
 /**
@@ -91,6 +94,8 @@ export async function sendSortingRequestToNebula(
 ): Promise<NebulaSortResult> {
   const nebulaUrl = process.env.NEBULA_API_URL;
   const nebulaApiKey = process.env.NEBULA_API_KEY;
+
+  let notice = "NEBULA_API_URL is not configured on the server.";
 
   if (nebulaUrl) {
     try {
@@ -140,18 +145,29 @@ export async function sendSortingRequestToNebula(
       if (response.ok) {
         const nebulaData = await response.json();
         if (nebulaData && (nebulaData.approved || nebulaData.isolated)) {
-          return nebulaData as NebulaSortResult;
+          return { ...(nebulaData as NebulaSortResult), source: "nebula" };
         }
+        notice = "Nebula returned a response in an unexpected format.";
+        console.warn("Malformed Nebula response. Using smart fallback classifier.");
       } else {
+        notice = `Nebula returned HTTP ${response.status}.`;
         console.warn(`Nebula server returned HTTP ${response.status}. Using smart fallback classifier.`);
       }
     } catch (err) {
+      notice =
+        err instanceof Error && err.name === "AbortError"
+          ? "Nebula did not respond within 45 seconds."
+          : "Nebula could not be reached from the server.";
       console.warn("Nebula connection timed out or unreachable. Using smart fallback classifier:", err);
     }
   }
 
   // Smart fallback document analyzer
-  return runSmartFallbackClassifier(files, context, requestId);
+  return {
+    ...runSmartFallbackClassifier(files, context, requestId),
+    source: "fallback",
+    notice: `${notice} Results below come from the local filename-based fallback classifier, not Nebula.`,
+  };
 }
 
 /**

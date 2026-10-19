@@ -12,9 +12,47 @@ import {
   getCourses,
   getSemesters,
 } from "@/lib/supabase/academic";
+import { createClient } from "@/lib/supabase/server";
+
+// Allow time for storage downloads plus the 45s Nebula request
+export const maxDuration = 60;
 
 const MAX_TOTAL_BYTES = 100 * 1024 * 1024; // 100 MB per sorting request
 const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png", "webp", "docx"];
+const ACADEMIC_BUCKET = "academic-materials";
+const INGESTION_PREFIX = "ingestion";
+
+// Raw files are uploaded by the browser straight to Supabase Storage (Vercel caps
+// function request bodies at 4.5 MB), so this route only receives their paths.
+interface IngestedFileRef {
+  path: string;
+  name: string;
+  type?: string;
+}
+
+/**
+ * Checks the file's leading bytes against its extension so a renamed file
+ * cannot slip through on extension/MIME alone.
+ */
+function matchesFileSignature(bytes: Uint8Array, ext: string): boolean {
+  const startsWith = (sig: number[], offset = 0) => sig.every((b, i) => bytes[offset + i] === b);
+
+  switch (ext) {
+    case "pdf":
+      return startsWith([0x25, 0x50, 0x44, 0x46]); // %PDF
+    case "jpg":
+    case "jpeg":
+      return startsWith([0xff, 0xd8, 0xff]);
+    case "png":
+      return startsWith([0x89, 0x50, 0x4e, 0x47]);
+    case "webp":
+      return startsWith([0x52, 0x49, 0x46, 0x46]) && startsWith([0x57, 0x45, 0x42, 0x50], 8); // RIFF....WEBP
+    case "docx":
+      return startsWith([0x50, 0x4b, 0x03, 0x04]); // ZIP container
+    default:
+      return false;
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -30,76 +68,116 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Content Length Check
-    const contentLength = req.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > MAX_TOTAL_BYTES) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
       return NextResponse.json(
-        {
-          success: false,
-          error: `Payload exceeds the 100 MB limit per sorting request (${(
-            parseInt(contentLength, 10) /
-            (1024 * 1024)
-          ).toFixed(1)} MB received).`,
-        },
-        { status: 413 }
+        { success: false, error: "Admin session expired. Please log in again." },
+        { status: 401 }
       );
     }
 
-    // 3. Parse FormData
-    const formData = await req.formData();
-    const files: File[] = [];
+    // 2. Parse ingestion manifest
+    const body = await req.json().catch(() => null);
+    const requestId: unknown = body?.request_id;
+    const refs: IngestedFileRef[] = Array.isArray(body?.files) ? body.files : [];
 
-    for (const entry of formData.entries()) {
-      const [, value] = entry;
-      if (value instanceof File) {
-        files.push(value);
-      }
+    if (typeof requestId !== "string" || !/^[a-zA-Z0-9-]{8,64}$/.test(requestId)) {
+      return NextResponse.json(
+        { success: false, error: "Missing or invalid sorting request ID." },
+        { status: 400 }
+      );
     }
 
-    if (files.length === 0) {
+    if (refs.length === 0) {
       return NextResponse.json(
         { success: false, error: "No files received for sorting." },
         { status: 400 }
       );
     }
 
-    // 4. Validate Files and Total Size
-    let totalSize = 0;
-    const rawFiles: RawUploadedFile[] = [];
+    // 3. Validate paths and extensions before downloading anything
+    const expectedPrefix = `${INGESTION_PREFIX}/${requestId}/`;
+    for (const ref of refs) {
+      if (
+        typeof ref?.path !== "string" ||
+        typeof ref?.name !== "string" ||
+        !ref.path.startsWith(expectedPrefix) ||
+        ref.path.includes("..")
+      ) {
+        return NextResponse.json(
+          { success: false, error: "Invalid file reference in sorting request." },
+          { status: 400 }
+        );
+      }
 
-    for (const file of files) {
-      totalSize += file.size;
-      const ext = file.name.split(".").pop()?.toLowerCase();
-
+      const ext = ref.name.split(".").pop()?.toLowerCase();
       if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
         return NextResponse.json(
           {
             success: false,
-            error: `File "${file.name}" has unsupported format .${ext}. Only PDF, JPG, JPEG, PNG, WebP, and DOCX are allowed.`,
+            error: `File "${ref.name}" has unsupported format .${ext}. Only PDF, JPG, JPEG, PNG, WebP, and DOCX are allowed.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 4. Download from storage, verify actual size and file signature
+    let totalSize = 0;
+    const rawFiles: RawUploadedFile[] = [];
+
+    for (const ref of refs) {
+      const { data: blob, error: downloadError } = await supabase.storage
+        .from(ACADEMIC_BUCKET)
+        .download(ref.path);
+
+      if (downloadError || !blob) {
+        console.error(`Failed to read ingested file ${ref.path}:`, downloadError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Could not read uploaded file "${ref.name}" from storage. Please re-upload and try again.`,
+          },
+          { status: 502 }
+        );
+      }
+
+      totalSize += blob.size;
+      if (totalSize > MAX_TOTAL_BYTES) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Total upload size exceeds 100 MB. Please select fewer documents.",
+          },
+          { status: 413 }
+        );
+      }
+
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const ext = ref.name.split(".").pop()!.toLowerCase();
+
+      if (!matchesFileSignature(bytes, ext)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `File "${ref.name}" does not look like a real .${ext} file. It may be corrupted or renamed.`,
           },
           { status: 400 }
         );
       }
 
-      // Convert small preview slice to base64 if needed
       rawFiles.push({
-        id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        name: file.name,
-        size: file.size,
-        type: file.type || "application/octet-stream",
+        // The storage path doubles as the file ID so approval can locate the source file
+        id: ref.path,
+        name: ref.name,
+        size: blob.size,
+        type: ref.type || blob.type || "application/octet-stream",
+        base64: Buffer.from(bytes).toString("base64"),
       });
-    }
-
-    if (totalSize > MAX_TOTAL_BYTES) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Total upload size exceeds 100 MB (${(totalSize / (1024 * 1024)).toFixed(
-            1
-          )} MB). Please select fewer documents.`,
-        },
-        { status: 413 }
-      );
     }
 
     // 5. Gather Dynamic Academic Hub Context
@@ -137,11 +215,11 @@ export async function POST(req: Request) {
     };
 
     // 6. Dispatch to Nebula AI
-    const result = await sendSortingRequestToNebula(rawFiles, context);
+    const result = await sendSortingRequestToNebula(rawFiles, context, requestId);
 
     return NextResponse.json({
       success: true,
-      message: `Nebula analyzed ${files.length} document(s). Review ready.`,
+      message: `Nebula analyzed ${rawFiles.length} document(s). Review ready.`,
       result,
     });
   } catch (err) {

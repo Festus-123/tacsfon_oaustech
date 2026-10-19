@@ -32,6 +32,7 @@ import {
   Semester,
 } from "@/data/academic";
 import { NebulaDocumentGroup, NebulaClassification, formatNormalizedFilename } from "@/lib/nebula/client";
+import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface MaterialsManagerProps {
   initialMaterials: AcademicMaterial[];
@@ -263,27 +264,52 @@ export function MaterialsManager({
     }
 
     setIsUploading(true);
-    setUploadStage("Uploading raw documents...");
 
     try {
-      const formData = new FormData();
-      selectedFiles.forEach((file) => {
-        formData.append("files", file);
-      });
+      // Upload raw files straight to private Supabase Storage. Sending them through the
+      // API route fails on Vercel, which rejects request bodies over 4.5 MB.
+      const supabase = createSupabaseBrowserClient();
+      const requestId = crypto.randomUUID();
+      const uploadedRefs: { path: string; name: string; type: string }[] = [];
 
-      // Simulation of pipeline progression stages
-      setTimeout(() => setUploadStage("Sending payload to Nebula AI..."), 800);
-      setTimeout(() => setUploadStage("Nebula analyzing document structure & page continuity..."), 1800);
-      setTimeout(() => setUploadStage("Grouping related pages into unified documents..."), 2800);
-      setTimeout(() => setUploadStage("Extracting academic courses, levels, and departments..."), 3800);
-      setTimeout(() => setUploadStage("Preparing review table..."), 4800);
+      for (const [index, file] of selectedFiles.entries()) {
+        setUploadStage(`Uploading raw documents (${index + 1} of ${selectedFiles.length})...`);
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_");
+        const path = `ingestion/${requestId}/${index}-${safeName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("academic-materials")
+          .upload(path, file, { contentType: file.type || undefined, upsert: false });
+
+        if (uploadError) {
+          toast.error(`Failed to upload "${file.name}": ${uploadError.message}`);
+          if (uploadedRefs.length > 0) {
+            await supabase.storage.from("academic-materials").remove(uploadedRefs.map((r) => r.path));
+          }
+          return;
+        }
+
+        uploadedRefs.push({ path, name: file.name, type: file.type });
+      }
+
+      setUploadStage("Sending to Nebula. Analyzing, grouping pages and extracting course details...");
 
       const res = await fetch("/api/admin/academic/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_id: requestId, files: uploadedRefs }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+
+      if (!data) {
+        toast.error(
+          res.status === 504
+            ? "The server timed out waiting for Nebula. Please try again with fewer files."
+            : `Server returned an unexpected response (HTTP ${res.status}).`
+        );
+        return;
+      }
 
       if (!res.ok || !data.success) {
         toast.error(data.error || "Failed to process documents with Nebula.");
@@ -291,6 +317,9 @@ export function MaterialsManager({
       }
 
       const result = data.result;
+      if (result.source === "fallback" && result.notice) {
+        toast.warning(result.notice, { duration: 10000 });
+      }
       setApprovedGroups((prev) => [...(result.approved || []), ...prev]);
       setIsolatedGroups((prev) => [...(result.isolated || []), ...prev]);
       setRejectedGroups((prev) => [...(result.rejected || []), ...prev]);
@@ -448,6 +477,7 @@ export function MaterialsManager({
     if (approvedGroups.length === 0) return;
 
     let count = 0;
+    const publishedIds: string[] = [];
     for (const group of approvedGroups) {
       try {
         const res = await fetch("/api/admin/academic/upload/approve", {
@@ -458,6 +488,7 @@ export function MaterialsManager({
         const data = await res.json();
         if (data.success) {
           setMaterials((prev) => [data.material, ...prev]);
+          publishedIds.push(group.group_id);
           count++;
         }
       } catch {
@@ -465,8 +496,16 @@ export function MaterialsManager({
       }
     }
 
-    setApprovedGroups([]);
-    toast.success(`Batch complete: Published ${count} materials to Academic Hub!`);
+    // Keep failed groups in the Approved list so they can be fixed and retried
+    setApprovedGroups((prev) => prev.filter((g) => !publishedIds.includes(g.group_id)));
+    const failed = approvedGroups.length - count;
+    if (failed > 0) {
+      toast.warning(
+        `Published ${count} material(s). ${failed} could not be published; open each one to see why.`
+      );
+    } else {
+      toast.success(`Batch complete: Published ${count} materials to Academic Hub!`);
+    }
   }
 
   // Filter published materials

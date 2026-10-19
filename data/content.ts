@@ -136,7 +136,7 @@ export const fellowshipContent = {
       ],
       regularActivity: "Tuesday Bible Study (5:30 PM)",
       iconName: "BookOpen",
-      image: "/assets/41306521578895022.jfif",
+      image: "/assets/hero-students.jpg",
     },
     {
       id: "prayer",
@@ -221,7 +221,7 @@ export const fellowshipContent = {
       ],
       regularActivity: "Pre-Exam Tutorials & Mentorship",
       iconName: "GraduationCap",
-      image: "/assets/41306521578895022.jfif",
+      image: "/assets/hero-students.jpg",
     },
     {
       id: "ushering",
@@ -255,7 +255,7 @@ export const fellowshipContent = {
       ],
       regularActivity: "Logistics & Venue Setup",
       iconName: "Layers",
-      image: "/assets/Church photography_ worship + serve team.jfif",
+      image: "/assets/worship-serve-team.jpg",
     },
     {
       id: "brothers",
@@ -306,7 +306,7 @@ export const fellowshipContent = {
       ],
       regularActivity: "Media & Audiovisual Production",
       iconName: "Camera",
-      image: "/assets/Church photography_ worship + serve team.jfif",
+      image: "/assets/worship-serve-team.jpg",
     },
   ],
 
