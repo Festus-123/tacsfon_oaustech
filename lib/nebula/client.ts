@@ -237,7 +237,7 @@ export function resolveClassification(
   } else if (scope !== "general" && !school && !schoolName) {
     problem = `New department "${departmentName}": choose the school it belongs to.`;
   } else if (materialType.slug === "past_questions" && (!session || !semester)) {
-    problem = "The session or semester is not printed on this past question. Enter them from the paper.";
+    problem = "The session or semester was not found for this past question. Enter them from the paper.";
   }
 
   return { classification, problem, notes };
@@ -252,18 +252,41 @@ const SORTING_SCHEMA = ["material_type", "level", "school", "department", "cours
 
 // Nebula only has to read the material type and course code. Everything else is either
 // derived by TACSFON from the course record/scope rules, or optional on the paper.
-const REQUIRED_FIELDS = ["material_type", "course"];
+// Past questions also need the session and semester printed on the paper.
+function requiredFieldsFor(materialType: NebulaSortingContext["materialTypes"][number] | undefined): string[] {
+  return materialType?.slug === "past_questions"
+    ? ["material_type", "course", "session", "semester"]
+    : ["material_type", "course"];
+}
 
-const FIELD_DESCRIPTIONS: Record<string, string> = {
-  material_type:
-    "Past Questions = past examination or test question papers; Manuals / Lecture Notes = lecture notes, practical manuals, study guides; Workbooks = worksheets and exercises; Materials = other reading material, slides, textbooks.",
-  level: "Course level (100-500). Usually the first digit of the course code: CSC 308 is 300 level.",
-  school: "The university school/faculty, only if printed on the document.",
-  department: "The department offering the course, only if printed on the document.",
-  course: "The course code only, three letters and three digits, e.g. CSC 308 or GST 111.",
-  session: "Academic session printed on the document, e.g. 2023/2024.",
-  semester: "First Semester or Second Semester, as printed on the document.",
+// What each material type means, keyed by slug so the wording follows the database names
+const MATERIAL_TYPE_MEANINGS: Record<string, string> = {
+  past_questions: "any examination, test or quiz question paper",
+  manuals: "lecture notes, practical/lab manuals or study guides",
+  workbooks: "worksheets, exercises or problem sets",
+  materials: "other reading material, slides or textbooks",
 };
+
+function fieldDescriptions(context: NebulaSortingContext): Record<string, string> {
+  const meanings = context.materialTypes
+    .map((t) => `'${t.name}' = ${MATERIAL_TYPE_MEANINGS[t.slug] || t.name}`)
+    .join("; ");
+  const pastQuestions = context.materialTypes.find((t) => t.slug === "past_questions")?.name || "Past Questions";
+  return {
+    material_type: `Decide from what the document IS, not from a printed label: ${meanings}. A question paper is '${pastQuestions}' even though those words are not printed on it.`.slice(
+      0,
+      500
+    ),
+    level: "Course level (100-500). Usually the first digit of the course code: CSC 308 is 300 level.",
+    school: "The university school/faculty, only if printed on the document.",
+    department: "The department offering the course, only if printed on the document.",
+    course: "The course code only, three letters and three digits, e.g. CSC 308 or GST 111.",
+    session:
+      "Academic session printed on the document, usually in the exam heading, e.g. 2023/2024 (also written 2023/24 or 2023-2024).",
+    semester:
+      "First Semester or Second Semester, usually in the exam heading (Harmattan = First Semester, Rain = Second Semester).",
+  };
+}
 
 // Vercel functions on this route run for up to 300s (route maxDuration); leave headroom
 const NEBULA_TIMEOUT_MS = 280_000;
@@ -306,29 +329,31 @@ function buildSortingForm(
   files: RawUploadedFile[],
   context: NebulaSortingContext,
   requestId: string,
-  reprocess?: {
-    supplied: Record<string, string>;
-    extraAllowed: { school: string[]; department: string[] };
-    previousGroup: NebulaDocumentGroup;
-  }
+  options: {
+    // Values the administrator supplied (e.g. the material type chosen for the upload).
+    // Nebula uses them as given instead of reading them from the documents.
+    adminValues?: Record<string, string>;
+    extraAllowed?: { school: string[]; department: string[] };
+    previousGroup?: NebulaDocumentGroup;
+  } = {}
 ): FormData {
+  const { adminValues = {}, extraAllowed, previousGroup } = options;
+  const chosenType = context.materialTypes.find((t) => t.name === adminValues.material_type);
+
   const form = new FormData();
   form.append("task", "document_sorting");
   form.append("request_id", requestId);
   form.append("schema", JSON.stringify(SORTING_SCHEMA));
-  form.append("required_fields", JSON.stringify(REQUIRED_FIELDS));
-  form.append("field_descriptions", JSON.stringify(FIELD_DESCRIPTIONS));
+  form.append("required_fields", JSON.stringify(requiredFieldsFor(chosenType)));
+  form.append("field_descriptions", JSON.stringify(fieldDescriptions(context)));
   form.append(
     "allowed_values",
     JSON.stringify({
       material_type: unique(context.materialTypes.map((t) => t.name)),
       level: context.levels.map(String),
       // New schools/departments typed by the admin must be allowed for Nebula to accept them
-      school: unique([...context.schools.map((s) => s.name), ...(reprocess?.extraAllowed.school || [])]),
-      department: unique([
-        ...context.departments.map((d) => d.name),
-        ...(reprocess?.extraAllowed.department || []),
-      ]),
+      school: unique([...context.schools.map((s) => s.name), ...(extraAllowed?.school || [])]),
+      department: unique([...context.departments.map((d) => d.name), ...(extraAllowed?.department || [])]),
       // Unrestricted: new courses are allowed and created on approval
       course: [],
       session: [],
@@ -336,9 +361,11 @@ function buildSortingForm(
     })
   );
 
-  if (reprocess) {
-    form.append("additional_context", JSON.stringify({ ...reprocess.supplied, source: "administrator" }));
-    form.append("previous_result", JSON.stringify(reprocess.previousGroup));
+  if (Object.keys(adminValues).length > 0) {
+    form.append("additional_context", JSON.stringify({ ...adminValues, source: "administrator" }));
+  }
+  if (previousGroup) {
+    form.append("previous_result", JSON.stringify(previousGroup));
   }
 
   // Files must be sent in page order: Nebula uses the order for continuation/boundary reasoning
@@ -484,15 +511,21 @@ function mapNebulaResponse(
 export async function sendSortingRequestToNebula(
   files: RawUploadedFile[],
   context: NebulaSortingContext,
-  requestId: string = `req-${Date.now()}`
+  requestId: string = `req-${Date.now()}`,
+  options: { materialType?: string } = {}
 ): Promise<NebulaSortResult> {
-  const outcome = await postToNebula(buildSortingForm(files, context, requestId));
+  // A material type chosen for the whole upload is sent as an administrator value;
+  // without one ("Auto-detect"), Nebula decides it from each document
+  const chosenType = context.materialTypes.find((t) => sameText(t.name, options.materialType));
+  const adminValues: Record<string, string> = chosenType ? { material_type: chosenType.name } : {};
+
+  const outcome = await postToNebula(buildSortingForm(files, context, requestId, { adminValues }));
   if (outcome.data) {
     return mapNebulaResponse(outcome.data, files, context);
   }
 
   return {
-    ...runSmartFallbackClassifier(files, context, requestId),
+    ...runSmartFallbackClassifier(files, context, requestId, chosenType?.name),
     source: "fallback",
     notice: `${outcome.notice} Results below come from the local filename-based fallback classifier, not Nebula.`,
   };
@@ -540,7 +573,7 @@ export async function reprocessGroupWithNebula(
 
   const requestId = `reprocess-${Date.now()}`;
   const outcome = await postToNebula(
-    buildSortingForm(files, context, requestId, { supplied, extraAllowed, previousGroup: group })
+    buildSortingForm(files, context, requestId, { adminValues: supplied, extraAllowed, previousGroup: group })
   );
   if (!outcome.data) return { result: null, notice: outcome.notice };
 
@@ -558,7 +591,8 @@ export async function reprocessGroupWithNebula(
 function runSmartFallbackClassifier(
   files: RawUploadedFile[],
   context: NebulaSortingContext,
-  requestId: string
+  requestId: string,
+  chosenMaterialType?: string
 ): NebulaSortResult {
   const now = new Date().toISOString();
   const buckets = new Map<string, RawUploadedFile[]>();
@@ -578,6 +612,7 @@ function runSmartFallbackClassifier(
     const codeMatch = names.match(/([A-Za-z]{3})[\s_-]?(\d{3})/);
 
     const materialType =
+      context.materialTypes.find((t) => t.name === chosenMaterialType) ||
       context.materialTypes.find((t) => lower.includes(t.slug) || lower.includes(t.name.toLowerCase())) ||
       (/(past|pq|exam|test)/.test(lower)
         ? context.materialTypes.find((t) => t.slug === "past_questions")

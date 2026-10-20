@@ -94,6 +94,10 @@ export function MaterialsManager({
   // Materials & Upload State
   const [materials, setMaterials] = useState<AcademicMaterial[]>(initialMaterials);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // Material type for the whole upload ("" = let Nebula detect it per document)
+  const [uploadMaterialType, setUploadMaterialType] = useState<string>(
+    materialTypes.find((t) => t.slug === "past_questions")?.name || ""
+  );
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadStage, setUploadStage] = useState<string>("");
 
@@ -480,7 +484,7 @@ export function MaterialsManager({
       const res = await fetch("/api/admin/academic/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_id: requestId, files: uploadedRefs }),
+        body: JSON.stringify({ request_id: requestId, files: uploadedRefs, material_type: uploadMaterialType }),
       });
 
       const data = await res.json().catch(() => null);
@@ -1121,13 +1125,31 @@ export function MaterialsManager({
             {/* Selected Files Count & Submit */}
             {selectedFiles.length > 0 && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50/60 border border-blue-200/80">
-                <div className="text-xs text-blue-900">
-                  <strong>{selectedFiles.length} file(s) ready</strong> (Total:{" "}
-                  {(
-                    selectedFiles.reduce((acc, f) => acc + f.size, 0) /
-                    (1024 * 1024)
-                  ).toFixed(2)}{" "}
-                  MB / 100 MB max)
+                <div className="space-y-2 text-xs text-blue-900">
+                  <div>
+                    <strong>{selectedFiles.length} file(s) ready</strong> (Total:{" "}
+                    {(
+                      selectedFiles.reduce((acc, f) => acc + f.size, 0) /
+                      (1024 * 1024)
+                    ).toFixed(2)}{" "}
+                    MB / 100 MB max)
+                  </div>
+                  <label className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">This upload contains:</span>
+                    <select
+                      value={uploadMaterialType}
+                      onChange={(e) => setUploadMaterialType(e.target.value)}
+                      disabled={isUploading}
+                      className="px-2.5 py-1.5 rounded-lg border border-blue-200 bg-white text-stone-800 text-xs"
+                    >
+                      {materialTypes.map((t) => (
+                        <option key={t.id} value={t.name}>
+                          {t.name}
+                        </option>
+                      ))}
+                      <option value="">Mixed types (Nebula detects each)</option>
+                    </select>
+                  </label>
                 </div>
 
                 <div className="flex items-center gap-2">

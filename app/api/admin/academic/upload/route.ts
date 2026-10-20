@@ -73,6 +73,8 @@ export async function POST(req: Request) {
     // 2. Parse ingestion manifest
     const body = await req.json().catch(() => null);
     const requestId: unknown = body?.request_id;
+    // Material type chosen for the whole upload; empty means Nebula auto-detects it per document
+    const chosenMaterialType = typeof body?.material_type === "string" ? body.material_type.trim() : "";
     const refs: IngestedFileRef[] = Array.isArray(body?.files) ? body.files : [];
 
     if (typeof requestId !== "string" || !/^[a-zA-Z0-9-]{8,64}$/.test(requestId)) {
@@ -173,8 +175,17 @@ export async function POST(req: Request) {
     // 5. Gather Dynamic Academic Hub Context
     const context = await getNebulaSortingContext();
 
+    if (chosenMaterialType && !context.materialTypes.some((t) => t.name === chosenMaterialType)) {
+      return NextResponse.json(
+        { success: false, error: `Unknown material type "${chosenMaterialType}".` },
+        { status: 400 }
+      );
+    }
+
     // 6. Dispatch to Nebula AI
-    const result = await sendSortingRequestToNebula(rawFiles, context, requestId);
+    const result = await sendSortingRequestToNebula(rawFiles, context, requestId, {
+      materialType: chosenMaterialType || undefined,
+    });
 
     return NextResponse.json({
       success: true,
