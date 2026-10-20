@@ -378,15 +378,6 @@ export const initialMaterials: AcademicMaterial[] = [
 
 export const initialDemoMaterials: DemoMaterial[] = [
   {
-    id: "demo-video",
-    title: "Academic Hub Platform Walkthrough & Study Guide",
-    type: "video",
-    file_url: "/assets/ins_link_DXCjyWIDVnm_1788818855788.mp4",
-    description: "A quick 60-second tour showing how materials are indexed and accessed on phone and desktop.",
-    is_visible: true,
-    created_at: new Date().toISOString(),
-  },
-  {
     id: "demo-pdf",
     title: "Sample Past Questions Preview (SAMPLE)",
     type: "pdf",

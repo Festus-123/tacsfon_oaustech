@@ -6,14 +6,17 @@ import {
   FileText,
   Lock,
   Sparkles,
-  Download,
   ShieldCheck,
   Calendar,
   GraduationCap,
+  KeyRound,
+  ExternalLink,
 } from "lucide-react";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicFooter } from "@/components/academic/academic-footer";
 import { getMaterialById, getActiveSemester } from "@/lib/supabase/academic";
+import { getStudentAccess } from "@/lib/academic/access";
+import { getMaterialFiles } from "@/lib/academic/material-files";
 import { academicSupport } from "@/data/academic";
 
 interface PageProps {
@@ -36,16 +39,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function MaterialViewerPage({ params }: PageProps) {
   const { id } = await params;
-  const [material, activeSemester] = await Promise.all([
+  const [material, activeSemester, access] = await Promise.all([
     getMaterialById(id),
     getActiveSemester(),
+    getStudentAccess(),
   ]);
 
   if (!material) {
     notFound();
   }
 
-  const price = activeSemester?.price ? `₦${activeSemester.price.toLocaleString()}` : "₦1,500";
+  // Files are only signed for visitors with an active subscription
+  const files = access ? await getMaterialFiles(material.storage_path) : [];
+  const price = activeSemester?.price ? `₦${Number(activeSemester.price).toLocaleString()}` : null;
+  const sessionLabel = [material.academic_session_name, material.semester_name].filter(Boolean).join(" • ");
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-stone-900">
@@ -88,18 +95,20 @@ export default async function MaterialViewerPage({ params }: PageProps) {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-stone-400 shrink-0" />
-              <span>{material.academic_session_name} &bull; {material.semester_name}</span>
+              <span>{sessionLabel || "Session not specified"}</span>
             </div>
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-stone-400 shrink-0" />
-              <span>{material.page_count || 12} pages &bull; {(material.file_size / 1000000).toFixed(1)} MB</span>
+              <span>
+                {material.file_type?.toUpperCase()}
+                {material.file_size ? ` • ${(material.file_size / 1_000_000).toFixed(1)} MB` : ""}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Reader & Preview Section */}
+        {/* Reader */}
         <div className="bg-white rounded-2xl border border-stone-200/90 shadow-sm overflow-hidden">
-          {/* Reader Top Bar */}
           <div className="bg-stone-100/80 border-b border-stone-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-blue-600" />
@@ -108,85 +117,106 @@ export default async function MaterialViewerPage({ params }: PageProps) {
                 ({academicSupport.watermarkText})
               </span>
             </div>
-
-            {/* Downloads Disabled Notice as specified in Section 92 */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled
-                className="px-3 py-1 rounded-lg bg-stone-200/70 text-stone-400 text-xs flex items-center gap-1 cursor-not-allowed"
-                title="Direct downloads are currently disabled in initial release to protect academic integrity."
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download (Disabled)</span>
-              </button>
-            </div>
+            {access && <span className="text-[11px] text-stone-500 break-all">Licensed to {access.email}</span>}
           </div>
 
-          {/* Reader Viewport */}
-          <div className="p-6 sm:p-10 relative bg-stone-50/50 min-h-[400px]">
-            {/* Watermark Diagonal Pattern */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.04] flex items-center justify-center select-none">
-              <span className="text-4xl md:text-6xl font-mono font-bold rotate-[-25deg] text-center">
-                TACSFON × FC STUDIO<br />
-                {material.course_code}
-              </span>
-            </div>
-
-            {/* Document Content Simulation / Excerpt */}
-            <div className="max-w-2xl mx-auto bg-white rounded-xl border border-stone-200 p-8 sm:p-12 shadow-sm font-serif text-stone-800 space-y-6 relative">
-              <div className="border-b border-stone-200 pb-4 text-center space-y-1">
-                <span className="text-[11px] uppercase tracking-widest text-stone-400 font-sans block">
-                  Olusegun Agagu University of Science and Technology
-                </span>
-                <h2 className="text-xl font-bold text-stone-900">{material.title}</h2>
-                <span className="text-xs text-stone-500 font-sans block">
-                  {material.course_title} &bull; Level {material.level}
-                </span>
-              </div>
-
-              <div className="space-y-4 text-xs sm:text-sm font-sans leading-relaxed text-stone-700">
-                <p>
-                  <strong>Course Learning Objectives & Outline:</strong> This document contains verified
-                  instructional syllabi, previous semester examination questions, and guided solutions
-                  prepared for students in the Department of {material.department_name || "Science"}.
+          {access ? (
+            <div className="p-3 sm:p-6 bg-stone-50/50 space-y-4">
+              {files.length === 0 ? (
+                <p className="py-16 text-center text-xs text-stone-500">
+                  This document could not be loaded right now. Please refresh, or contact support if it keeps
+                  happening.
                 </p>
+              ) : (
+                files.map((file, index) => (
+                  <div key={file.name} className="relative rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    {files.length > 1 && (
+                      <div className="px-3 py-1.5 text-[11px] text-stone-500 border-b border-stone-100">
+                        Page {index + 1} of {files.length}
+                      </div>
+                    )}
 
-                <div className="bg-stone-50 p-4 rounded-lg border border-stone-200/80 space-y-2 font-mono text-xs">
-                  <div>1. Core Theoretical Foundations & Paradigms</div>
-                  <div>2. Laboratory Benchmarks & Practical Demonstrations</div>
-                  <div>3. Step-by-Step Problem Solving & Model Exam Answers</div>
+                    {file.kind === "image" && (
+                      // eslint-disable-next-line @next/next/no-img-element -- short-lived signed storage URL
+                      <img
+                        src={file.url}
+                        alt={`${material.course_code} page ${index + 1}`}
+                        className="w-full h-auto select-none"
+                        draggable={false}
+                      />
+                    )}
+                    {file.kind === "pdf" && (
+                      <iframe
+                        src={`${file.url}#toolbar=0&navpanes=0`}
+                        title={`${material.course_code} document`}
+                        className="w-full h-[80vh]"
+                      />
+                    )}
+                    {file.kind === "other" && (
+                      <div className="py-12 text-center space-y-3">
+                        <p className="text-xs text-stone-600">This document type cannot be shown inside the page.</p>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Open document
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Watermark with the subscriber's email discourages sharing screenshots */}
+                    <div className="pointer-events-none select-none absolute inset-0 flex items-center justify-center overflow-hidden">
+                      <span className="rotate-[-25deg] text-center font-mono font-bold text-2xl sm:text-4xl text-stone-900/[0.07] leading-tight">
+                        TACSFON × FC STUDIO
+                        <br />
+                        {access.email}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="p-6 sm:p-10 bg-stone-50/50">
+              <div className="max-w-xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50/80 rounded-2xl border border-blue-200/80 p-6 text-center space-y-3 shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-xs">
+                  <Lock className="w-5 h-5" />
                 </div>
-
-                <p className="text-stone-500 text-xs italic">
-                  [... Full document continuous pages and answer keys protected behind active semester subscription ...]
+                <h3 className="font-serif font-bold text-stone-900 text-lg">
+                  Unlock Full Access for the Entire Semester
+                </h3>
+                <p className="text-stone-600 text-xs max-w-md mx-auto leading-relaxed">
+                  {price ? (
+                    <>
+                      One payment of <strong>{price}</strong> gives you
+                    </>
+                  ) : (
+                    "A semester subscription gives you"
+                  )}{" "}
+                  reading access to this document and every other course material for the active semester.
                 </p>
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+                  <Link
+                    href={`/academic/subscribe?course=${material.course_code || ""}`}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{price ? `Subscribe for ${price}` : "Subscribe"}</span>
+                  </Link>
+                  <Link
+                    href="/academic/account"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-stone-200 text-stone-700 text-xs font-semibold hover:bg-stone-50 transition"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>Already paid? Restore access</span>
+                  </Link>
+                </div>
               </div>
             </div>
-
-            {/* Subscription Unlock Overlay Card */}
-            <div className="mt-8 max-w-xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50/80 rounded-2xl border border-blue-200/80 p-6 text-center space-y-3 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-xs">
-                <Lock className="w-5 h-5" />
-              </div>
-              <h3 className="font-serif font-bold text-stone-900 text-lg">
-                Unlock Full Access for the Entire Semester
-              </h3>
-              <p className="text-stone-600 text-xs max-w-md mx-auto leading-relaxed">
-                One payment of <strong>{price}</strong> gives you instant, unrestricted reading access to this
-                document and every other course material across all departments for the active semester.
-              </p>
-              <div className="pt-2">
-                <Link
-                  href={`/academic/subscribe?course=${material.course_code || ""}`}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Subscribe for {price}</span>
-                </Link>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </main>
 

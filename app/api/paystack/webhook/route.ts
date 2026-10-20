@@ -24,8 +24,15 @@ export async function POST(request: NextRequest) {
       const semesterId = metadata.semesterId || (await getActiveSemester())?.id;
 
       if (userEmail && semesterId && reference) {
-        await activateSemesterEntitlement(userEmail, semesterId, reference);
-        console.log(`Entitlement activated via Paystack webhook for ${userEmail}`);
+        const activation = await activateSemesterEntitlement(userEmail, semesterId, reference, {
+          amount: typeof data.amount === "number" ? data.amount / 100 : undefined,
+          metadata,
+        });
+        if (activation.success) {
+          console.log(`Entitlement activated via Paystack webhook for ${userEmail}`);
+        } else {
+          console.error(`Webhook could not save entitlement for ${reference}:`, activation.error);
+        }
       }
     }
 

@@ -1,5 +1,5 @@
-import { createClient } from "./server";
 import { createPublicClient } from "./client";
+import { createServiceClient, SERVICE_KEY_MISSING } from "./admin";
 import type { CourseScopeRule } from "@/lib/academic/course-scope";
 import {
   Semester,
@@ -9,7 +9,6 @@ import {
   MaterialType,
   AcademicMaterial,
   DemoMaterial,
-  AcademicEntitlement,
   AcademicSession,
   initialAcademicSessions,
   initialSemesters,
@@ -21,8 +20,6 @@ import {
   initialDemoMaterials,
 } from "@/data/academic";
 
-// In-memory mock entitlements storage for test/demo accounts
-const mockEntitlements: AcademicEntitlement[] = [];
 
 // ============================================================
 // PUBLIC BROWSING & ACCESS QUERIES
@@ -359,103 +356,82 @@ export async function getDemoMaterials(): Promise<DemoMaterial[]> {
 }
 
 // ============================================================
-// ENTITLEMENT CHECK & ACCESS SHARING PROTECTION
+// ENTITLEMENT ACTIVATION
+// Students are not Supabase users, so entitlements and payments are written with the
+// server-only service client (RLS only lets admins write these tables).
 // ============================================================
 
-export async function checkUserSemesterEntitlement(
-  userEmail: string,
-  semesterId: string
-): Promise<{ hasAccess: boolean; entitlement?: AcademicEntitlement; reason?: string }> {
-  if (!userEmail) {
-    return { hasAccess: false, reason: "Authentication required" };
-  }
-
-  // Check mock store first for instantaneous local responsiveness
-  const mockMatch = mockEntitlements.find(
-    (e) => e.user_email.toLowerCase() === userEmail.toLowerCase() && e.semester_id === semesterId
-  );
-  if (mockMatch) {
-    const isExpired = new Date().getTime() >= new Date(mockMatch.expires_at).getTime();
-    if (!isExpired && mockMatch.status === "ACTIVE") {
-      return { hasAccess: true, entitlement: mockMatch };
-    }
-  }
-
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("academic_entitlements")
-      .select("*")
-      .eq("user_email", userEmail)
-      .eq("semester_id", semesterId)
-      .eq("status", "ACTIVE")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (error || !data) {
-      return { hasAccess: false, reason: "No active entitlement found for this semester" };
-    }
-
-    const now = new Date().getTime();
-    const expiry = new Date(data.expires_at).getTime();
-
-    if (now >= expiry) {
-      return { hasAccess: false, reason: "Your access for this semester has expired" };
-    }
-
-    return { hasAccess: true, entitlement: data as AcademicEntitlement };
-  } catch {
-    return { hasAccess: false, reason: "Could not verify entitlement" };
-  }
-}
-
-// Idempotent entitlement activation
+/**
+ * Records a verified payment and grants semester access. Idempotent per payment reference,
+ * so verifying the same payment twice (redirect + webhook) never creates a duplicate.
+ */
 export async function activateSemesterEntitlement(
   userEmail: string,
   semesterId: string,
   paymentReference: string,
-  userId?: string
-): Promise<{ success: boolean; error?: string }> {
+  details: { amount?: number; userId?: string; metadata?: Record<string, unknown> } = {}
+): Promise<{ success: boolean; expiresAt?: string; error?: string }> {
+  const supabase = createServiceClient();
+  if (!supabase) {
+    console.error(SERVICE_KEY_MISSING);
+    return { success: false, error: SERVICE_KEY_MISSING };
+  }
+
   try {
-    const semester = initialSemesters.find((s) => s.id === semesterId) || (await getActiveSemester());
-    if (!semester) {
+    const email = userEmail.trim().toLowerCase();
+
+    const { data: existing } = await supabase
+      .from("academic_entitlements")
+      .select("id, expires_at")
+      .eq("payment_reference", paymentReference)
+      .maybeSingle();
+    if (existing) {
+      return { success: true, expiresAt: existing.expires_at };
+    }
+
+    const { data: semester, error: semesterError } = await supabase
+      .from("semesters")
+      .select("id, end_date, price")
+      .eq("id", semesterId)
+      .maybeSingle();
+    if (semesterError || !semester) {
       return { success: false, error: "Semester not found" };
     }
 
+    // Access lasts until the end of the semester's last day
+    const expiresAt = new Date(`${semester.end_date}T23:59:59Z`).toISOString();
     const startsAt = new Date().toISOString();
-    const expiresAt = new Date(semester.end_date).toISOString();
 
-    const entitlement: AcademicEntitlement = {
-      id: `ent-${Date.now()}`,
-      user_id: userId,
-      user_email: userEmail.toLowerCase(),
+    await supabase.from("academic_payments").upsert(
+      {
+        user_id: details.userId || null,
+        user_email: email,
+        semester_id: semesterId,
+        paystack_reference: paymentReference,
+        amount: details.amount ?? Number(semester.price),
+        status: "SUCCESS",
+        paid_at: startsAt,
+        metadata: details.metadata || null,
+      },
+      { onConflict: "paystack_reference" }
+    );
+
+    const { error: insertError } = await supabase.from("academic_entitlements").insert({
+      user_id: details.userId || null,
+      user_email: email,
       semester_id: semesterId,
       payment_reference: paymentReference,
       starts_at: startsAt,
       expires_at: expiresAt,
       status: "ACTIVE",
-      created_at: startsAt,
-    };
+    });
 
-    mockEntitlements.unshift(entitlement);
-
-    try {
-      const supabase = await createClient();
-      await supabase.from("academic_entitlements").insert({
-        user_id: userId || null,
-        user_email: userEmail.toLowerCase(),
-        semester_id: semesterId,
-        payment_reference: paymentReference,
-        starts_at: startsAt,
-        expires_at: expiresAt,
-        status: "ACTIVE",
-      });
-    } catch (e) {
-      console.warn("Could not insert entitlement into live DB, saved to memory:", e);
+    if (insertError) {
+      console.error("Failed to save academic entitlement:", insertError);
+      return { success: false, error: insertError.message };
     }
 
-    return { success: true };
+    return { success: true, expiresAt };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Failed to activate entitlement";
     return { success: false, error: errorMsg };

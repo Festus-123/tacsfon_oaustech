@@ -11,6 +11,7 @@ import {
   getPublishedMaterials,
   getCourseScopeRules,
 } from "@/lib/supabase/academic";
+import { getStudentAccess } from "@/lib/academic/access";
 
 export const metadata: Metadata = {
   title: "Browse Academic Materials — Past Questions & Manuals | Academic Hub",
@@ -26,7 +27,7 @@ export default async function AcademicMaterialsPage({ searchParams }: PageProps)
   const resolvedParams = await searchParams;
   const typeParam = typeof resolvedParams.type === "string" ? resolvedParams.type : undefined;
 
-  const [activeSemester, materialTypes, schools, departments, courses, materials, rules] =
+  const [activeSemester, materialTypes, schools, departments, courses, materials, rules, access] =
     await Promise.all([
       getActiveSemester(),
       getMaterialTypes(),
@@ -35,6 +36,7 @@ export default async function AcademicMaterialsPage({ searchParams }: PageProps)
       getCourses(),
       getPublishedMaterials(),
       getCourseScopeRules(),
+      getStudentAccess(),
     ]);
 
   return (
@@ -58,6 +60,7 @@ export default async function AcademicMaterialsPage({ searchParams }: PageProps)
           departments={departments}
           courses={courses}
           rules={rules}
+          hasActiveAccess={!!access}
           initialTypeSlug={typeParam}
         />
       </main>

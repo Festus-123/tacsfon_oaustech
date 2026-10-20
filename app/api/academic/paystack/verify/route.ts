@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPaystackTransaction } from "@/lib/paystack/client";
 import { getActiveSemester, getSemesters, activateSemesterEntitlement } from "@/lib/supabase/academic";
+import { grantAccessCookie } from "@/lib/academic/access";
 
 // Simulated checkout (no real payment) is a local-development convenience only
 const SIMULATION_ALLOWED = process.env.NODE_ENV !== "production";
@@ -23,7 +24,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Payment could not be verified." }, { status: 400 });
       }
       const email = emailParam || "student@oaustech.edu.ng";
-      await activateSemesterEntitlement(email, activeSemester.id, reference);
+      const activation = await activateSemesterEntitlement(email, activeSemester.id, reference);
+      if (!activation.success || !activation.expiresAt) {
+        return NextResponse.json({ error: activation.error || "Could not save access." }, { status: 500 });
+      }
+      await grantAccessCookie(email, activation.expiresAt);
       return NextResponse.json({
         success: true,
         verified: true,
@@ -82,7 +87,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No email is attached to this payment." }, { status: 400 });
     }
 
-    await activateSemesterEntitlement(customerEmail, paidSemester.id, reference);
+    const activation = await activateSemesterEntitlement(customerEmail, paidSemester.id, reference, {
+      amount: amountPaid,
+      metadata,
+    });
+    if (!activation.success || !activation.expiresAt) {
+      console.error(`Paid reference ${reference} could not be saved:`, activation.error);
+      return NextResponse.json(
+        {
+          error:
+            "Your payment was received, but access could not be saved. Please contact support with your reference: " +
+            reference,
+        },
+        { status: 500 }
+      );
+    }
+
+    // Remember this browser as the paying student
+    await grantAccessCookie(customerEmail, activation.expiresAt);
 
     return NextResponse.json({
       success: true,
