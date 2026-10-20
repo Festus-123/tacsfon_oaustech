@@ -5,7 +5,6 @@ import Image from "next/image";
 import { fellowshipContent } from "@/data/content";
 import { socialLinks } from "@/data/social";
 import { images } from "@/data/images";
-import { ContactForm } from "@/components/forms/contact-form";
 import { DonationModal } from "@/components/donation/donation-modal";
 import {
   MapPin,
@@ -14,6 +13,7 @@ import {
   Clock,
   Heart,
   Lock,
+  Send,
 } from "lucide-react";
 import { SiX, SiFacebook, SiInstagram, SiTiktok } from "react-icons/si";
 
@@ -23,27 +23,16 @@ export function Footer() {
       {/* Top Banner: Fellowship Identity & Theme */}
       <div className="border-b border-forest-800/60 bg-forest-900/40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white p-0.5">
-              <Image
-                src={images.logos.tacsfon}
-                alt="TACSFON Emblem"
-                fill
-                sizes="40px"
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gold-400">
-                Current Yearly Theme
-              </p>
-              <p className="font-serif text-lg font-bold text-white tracking-wide">
-                &quot;{fellowshipContent.identity.yearlyTheme}&quot;
-              </p>
-            </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold-400">
+              Current Yearly Theme
+            </p>
+            <p className="font-serif text-lg font-bold text-white tracking-wide">
+              &quot;{fellowshipContent.identity.yearlyTheme}&quot;
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <span className="text-xs text-forest-200/80 italic font-serif">
               &quot;{fellowshipContent.identity.motto}&quot; — {fellowshipContent.identity.mottoScripture}
             </span>
@@ -204,9 +193,9 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Right Column: Compact Contact Form (5 cols) */}
-          <div className="lg:col-span-5 rounded-2xl bg-forest-900/60 p-6 border border-forest-800/80 shadow-lg">
-            <div className="mb-4">
+          {/* Right Column: Contact call-to-action (5 cols); the full form lives on /contact */}
+          <div className="lg:col-span-5 lg:self-start rounded-2xl bg-forest-900/60 p-6 border border-forest-800/80 shadow-lg flex flex-col gap-4">
+            <div>
               <span className="text-[10px] uppercase font-bold tracking-widest text-gold-400">
                 Reach Out to Us
               </span>
@@ -218,7 +207,13 @@ export function Footer() {
               </p>
             </div>
 
-            <ContactForm isCompact={true} />
+            <Link
+              href="/contact"
+              className="self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gold-500 text-forest-950 text-sm font-semibold hover:bg-gold-400 transition-colors shadow-2xs"
+            >
+              <Send className="h-4 w-4" />
+              Contact Us
+            </Link>
           </div>
         </div>
 

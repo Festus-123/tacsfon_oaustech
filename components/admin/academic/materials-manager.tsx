@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -41,6 +41,13 @@ import {
 } from "@/lib/nebula/client";
 import { CourseScope, CourseScopeRule, COURSE_SCOPE_LABELS } from "@/lib/academic/course-scope";
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+// Render's free tier sleeps after 15 idle minutes: ping Nebula well inside that window
+const NEBULA_KEEPALIVE_MS = 10 * 60 * 1000;
+// Before an upload, re-check Nebula if the last successful ping is older than this
+const NEBULA_FRESH_MS = 5 * 60 * 1000;
+
+type NebulaStatus = "waking" | "ready" | "unreachable";
 
 interface LocalFilePreview {
   path: string;
@@ -237,6 +244,48 @@ export function MaterialsManager({
     checkSecurityStatus();
   }, []);
 
+  // Keep Nebula awake while the ingestion gate is open; stops on lock or when leaving the page
+  const [nebulaStatus, setNebulaStatus] = useState<NebulaStatus>("waking");
+  const [nebulaError, setNebulaError] = useState("");
+  const lastNebulaReady = useRef(0);
+
+  const pingNebula = useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/admin/academic/nebula/wake", { cache: "no-store" });
+      const data = await res.json();
+      if (data.ready) {
+        lastNebulaReady.current = Date.now();
+        setNebulaStatus("ready");
+        setNebulaError("");
+        return true;
+      }
+      setNebulaStatus("unreachable");
+      setNebulaError(data.error || "Nebula did not respond.");
+      return false;
+    } catch {
+      setNebulaStatus("unreachable");
+      setNebulaError("Could not check Nebula.");
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isUnlocked) return;
+    const first = setTimeout(pingNebula, 0);
+    const timer = setInterval(pingNebula, NEBULA_KEEPALIVE_MS);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
+  }, [isUnlocked, pingNebula]);
+
+  // Waits for Nebula when the last successful ping is stale (it may have gone to sleep)
+  async function ensureNebulaAwake(): Promise<boolean> {
+    if (Date.now() - lastNebulaReady.current < NEBULA_FRESH_MS) return true;
+    setNebulaStatus("waking");
+    return pingNebula();
+  }
+
   // Handle Master Key Unlock
   async function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
@@ -259,6 +308,7 @@ export function MaterialsManager({
         return;
       }
 
+      setNebulaStatus("waking");
       setIsUnlocked(true);
       setSecurityKeyInput("");
       toast.success("Academic Hub document ingestion unlocked.");
@@ -393,6 +443,12 @@ export function MaterialsManager({
     setIsUploading(true);
 
     try {
+      setUploadStage("Checking Nebula (waking it can take up to a minute after it has been idle)...");
+      if (!(await ensureNebulaAwake())) {
+        toast.error("Nebula is not responding yet, so nothing was uploaded. Wait a minute and try again.");
+        return;
+      }
+
       // Upload raw files straight to private Supabase Storage. Sending them through the
       // API route fails on Vercel, which rejects request bodies over 4.5 MB.
       const supabase = createSupabaseBrowserClient();
@@ -504,6 +560,7 @@ export function MaterialsManager({
 
     setIsResubmitting(true);
     try {
+      await ensureNebulaAwake();
       const res = await fetch("/api/admin/academic/upload/resubmit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -988,9 +1045,48 @@ export function MaterialsManager({
                 </div>
               </div>
 
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-semibold">
-                Max 100 MB / Sorting Request • PDF, JPG, PNG, WebP, DOCX
-              </span>
+              <div className="flex flex-col items-start sm:items-end gap-1.5">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-semibold">
+                  Max 100 MB / Sorting Request • PDF, JPG, PNG, WebP, DOCX
+                </span>
+                <span
+                  title={nebulaError || undefined}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold ${
+                    nebulaStatus === "ready"
+                      ? "bg-emerald-50 text-emerald-800"
+                      : nebulaStatus === "waking"
+                        ? "bg-amber-50 text-amber-800"
+                        : "bg-red-50 text-red-700"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      nebulaStatus === "ready"
+                        ? "bg-emerald-500"
+                        : nebulaStatus === "waking"
+                          ? "bg-amber-500 animate-pulse"
+                          : "bg-red-500"
+                    }`}
+                  />
+                  {nebulaStatus === "ready" && "Nebula ready"}
+                  {nebulaStatus === "waking" && "Waking Nebula..."}
+                  {nebulaStatus === "unreachable" && (
+                    <>
+                      Nebula not responding
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNebulaStatus("waking");
+                          pingNebula();
+                        }}
+                        className="underline cursor-pointer"
+                      >
+                        Retry
+                      </button>
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
 
             {/* Drop Zone */}
