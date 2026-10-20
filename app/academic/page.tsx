@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { connection } from "next/server";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicHero } from "@/components/academic/academic-hero";
 import { AcademicCategoryCards } from "@/components/academic/academic-category-cards";
@@ -20,6 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AcademicLandingPage() {
+  // Render per request: semester, price and demos change from the admin without a redeploy
+  await connection();
+
   const [activeSemester, materialTypes, demoMaterials] = await Promise.all([
     getActiveSemester(),
     getMaterialTypes(),

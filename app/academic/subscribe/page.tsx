@@ -1,52 +1,32 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, ShieldCheck, Mail, Phone, Calendar, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { connection } from "next/server";
+import { ArrowLeft, Mail, Phone } from "lucide-react";
 import { AcademicHeader } from "@/components/academic/academic-header";
 import { AcademicFooter } from "@/components/academic/academic-footer";
+import { SubscribeForm } from "@/components/academic/subscribe-form";
 import { academicSupport } from "@/data/academic";
+import { getActiveSemester } from "@/lib/supabase/academic";
 
-export default function AcademicSubscribePage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+export default async function AcademicSubscribePage() {
+  // Render per request (not at build time) and read the same source the Paystack initialize
+  // route charges from, so the page always matches the bill
+  await connection();
+  const activeSemester = await getActiveSemester();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (!cleanEmail || !cleanEmail.includes("@")) {
-      toast.error("Please provide a valid student or personal email address.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/academic/paystack/initialize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanEmail }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.authorization_url) {
-        toast.error(data.error || "Could not initialize checkout. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      toast.success("Redirecting to Paystack payment gateway...");
-      window.location.href = data.authorization_url;
-    } catch {
-      toast.error("Network error. Please check your connection and retry.");
-      setLoading(false);
-    }
-  };
+  const semesterLabel = activeSemester
+    ? [activeSemester.academic_session_name, activeSemester.name].filter(Boolean).join(" • ")
+    : "";
+  const validUntil = activeSemester?.end_date
+    ? new Date(activeSemester.end_date).toLocaleDateString("en-NG", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-stone-900">
-      <AcademicHeader />
+      <AcademicHeader activeSemester={activeSemester} />
 
       <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-10 md:py-16 space-y-6">
         <div>
@@ -75,70 +55,18 @@ export default function AcademicSubscribePage() {
             </p>
           </div>
 
-          {/* Package Summary Box */}
-          <div className="bg-stone-50 rounded-2xl border border-stone-200 p-4 space-y-3 text-xs">
-            <div className="flex items-center justify-between font-medium text-stone-800">
-              <span>2024/2025 &bull; First Semester Access</span>
-              <span className="font-serif font-bold text-base text-blue-700">₦1,500</span>
-            </div>
-
-            <div className="space-y-1.5 text-stone-500 pt-2 border-t border-stone-200/60">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span>Unlocks all verified past questions across all departments</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span>Full access to practical manuals & lecture notes</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span>Valid through examination conclusion (Feb 2025)</span>
-              </div>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
-                Student Email Address *
-              </label>
-              <input
-                type="email"
-                placeholder="your.name@oaustech.edu.ng or personal email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
-              />
-              <span className="text-[11px] text-stone-400 block">
-                Your payment receipt and reading entitlement will be linked to this email.
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition disabled:opacity-60 cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Connecting to Paystack...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Proceed to Paystack Payment (₦1,500)</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="pt-2 flex items-center justify-center gap-1.5 text-[11px] text-stone-400">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>256-bit encrypted transaction processed by Paystack</span>
-          </div>
+          {activeSemester ? (
+            <SubscribeForm
+              price={Number(activeSemester.price) || 0}
+              semesterLabel={semesterLabel}
+              validUntil={validUntil}
+            />
+          ) : (
+            <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+              Subscriptions are not open right now: no academic semester is currently active. Please check
+              back soon or contact support below.
+            </p>
+          )}
         </div>
 
         {/* Support contacts */}

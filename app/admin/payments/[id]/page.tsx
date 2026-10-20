@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { PaymentDetail } from "@/components/admin/payments/payment-detail";
@@ -42,7 +43,11 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  // Share link / QR code use the configured site URL, or the address this page was opened on
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host");
+  const protocol = requestHeaders.get("x-forwarded-proto") || (host?.startsWith("localhost") ? "http" : "https");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
   const publicUrl = `${appUrl}/pay/${id}`;
   const qrDataUrl = await generateQrDataUrl(publicUrl);
 
