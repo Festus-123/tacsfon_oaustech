@@ -1,20 +1,27 @@
 import { NextResponse } from "next/server";
 import { isAcademicHubUnlocked } from "@/lib/security/academic-hub-key";
-import { NebulaDocumentGroup, formatNormalizedFilename } from "@/lib/nebula/client";
-import { createClient } from "@/lib/supabase/server";
 import {
-  getMaterialTypes,
-  getSchools,
-  getDepartments,
-  getCourses,
-  getSemesters,
-} from "@/lib/supabase/academic";
+  NebulaDocumentGroup,
+  formatNormalizedFilename,
+  resolveClassification,
+  describePendingCreations,
+} from "@/lib/nebula/client";
+import { getNebulaSortingContext } from "@/lib/nebula/context";
+import { coursePrefix } from "@/lib/academic/course-scope";
+import { createClient } from "@/lib/supabase/server";
 
 const ACADEMIC_BUCKET = "academic-materials";
 const INGESTION_PREFIX = "ingestion/";
 
-const sameText = (a?: string, b?: string) =>
-  !!a && !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/^school of\s+/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "school";
+
+const MIGRATION_HINT =
+  "If this mentions a missing column, run supabase/migration-course-scope.sql in the Supabase SQL Editor.";
 
 export async function POST(req: Request) {
   try {
@@ -40,6 +47,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const group: NebulaDocumentGroup = body.group;
+    const confirmCreate = body.confirm_create === true;
 
     if (!group || !group.classification) {
       return NextResponse.json(
@@ -48,90 +56,26 @@ export async function POST(req: Request) {
       );
     }
 
-    const c = group.classification;
+    // Re-resolve server-side against the live structure; never trust client-supplied IDs
+    const context = await getNebulaSortingContext();
+    const { classification: c, problem } = resolveClassification(group.classification, context);
 
-    // Resolve the confirmed metadata against the live Academic Hub structure.
-    // IDs are preferred when valid; otherwise match by name/code (admin edits change names).
-    const [materialTypes, schools, departments, courses, semesters] = await Promise.all([
-      getMaterialTypes(),
-      getSchools(),
-      getDepartments(),
-      getCourses(),
-      getSemesters(),
-    ]);
+    if (problem) {
+      return NextResponse.json({ success: false, error: `Cannot publish: ${problem}` }, { status: 400 });
+    }
 
-    const materialType =
-      materialTypes.find((t) => t.id === c.material_type_id) ||
-      materialTypes.find((t) => sameText(t.name, c.material_type) || sameText(t.slug, c.material_type));
-    const school =
-      schools.find((s) => s.id === c.school_id) ||
-      schools.find((s) => sameText(s.name, c.school) || sameText(s.code, c.school));
-    const department =
-      departments.find((d) => d.id === c.department_id) ||
-      departments.find(
-        (d) =>
-          (sameText(d.name, c.department) || sameText(d.code, c.department)) &&
-          (!school || d.school_id === school.id)
-      );
-    const course =
-      courses.find((co) => co.id === c.course_id) ||
-      courses.find(
-        (co) =>
-          sameText(co.code.replace(/\s+/g, ""), c.course?.replace(/\s+/g, "")) &&
-          (!department || co.department_id === department.id)
-      );
-    // Materials belong to a registered Academic Hub (access) semester. The session/semester printed
-    // on a paper is often not one, so fall back to the current ACTIVE semester.
-    const semester =
-      semesters.find((s) => s.id === c.semester_id) ||
-      semesters.find(
-        (s) => sameText(s.name, c.semester) && (!c.session || sameText(s.academic_session_name, c.session))
-      ) ||
-      semesters.find((s) => s.status === "ACTIVE");
-
-    if (semesters.length === 0) {
+    const creations = describePendingCreations(c);
+    if (creations.length > 0 && !confirmCreate) {
       return NextResponse.json(
         {
           success: false,
-          error: "No Academic Hub semester is registered. Create one under Semesters before publishing.",
+          needs_confirmation: true,
+          creations,
+          error: "Publishing this material will create new Academic Structure entries.",
         },
-        { status: 400 }
+        { status: 409 }
       );
     }
-
-    const missing = [
-      !materialType && "material type",
-      !school && "school",
-      !department && "department",
-      !course && "course",
-      !semester && "semester/session",
-    ].filter(Boolean);
-
-    if (!materialType || !school || !department || !course || !semester) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Cannot publish: ${missing.join(", ")} not found in the Academic Hub structure. Edit the classification or add it under Academic Structure first.`,
-        },
-        { status: 400 }
-      );
-    }
-
-    const sessionName = semester.academic_session_name || c.session;
-    const confirmed = {
-      ...c,
-      material_type: materialType.name,
-      school: school.name,
-      department: department.name,
-      course: course.code,
-      level: course.level,
-      session: sessionName,
-      semester: semester.name,
-    };
-
-    // Final filename is generated here from confirmed metadata, never trusted from the client/LLM
-    const finalFilename = formatNormalizedFilename(confirmed, group.original_filenames[0] || "file.pdf");
-    const sessionFolder = (sessionName || "unknown-session").replace(/[^a-zA-Z0-9]+/g, "-");
 
     const sourcePaths = group.source_file_ids.filter((id) => id.startsWith(INGESTION_PREFIX) && !id.includes(".."));
     if (sourcePaths.length === 0) {
@@ -144,8 +88,82 @@ export async function POST(req: Request) {
       );
     }
 
-    // Move raw ingestion files to their final Academic Hub location
+    // Undo list in case a later step fails, so storage and structure stay consistent
+    const created: { table: "schools" | "departments" | "courses"; id: string }[] = [];
     const movedPaths: { from: string; to: string }[] = [];
+
+    const rollback = async () => {
+      for (const moved of movedPaths.reverse()) {
+        await supabase.storage.from(ACADEMIC_BUCKET).move(moved.to, moved.from);
+      }
+      for (const entry of created.reverse()) {
+        await supabase.from(entry.table).delete().eq("id", entry.id);
+      }
+    };
+
+    const fail = async (message: string, status = 500) => {
+      await rollback();
+      return NextResponse.json({ success: false, error: message }, { status });
+    };
+
+    // 1. School (school- and department-scoped courses)
+    let schoolId = c.school_id;
+    if (c.scope !== "general" && !schoolId && c.school) {
+      const { data: existingCodes } = await supabase.from("schools").select("code");
+      const taken = new Set((existingCodes || []).map((s: { code: string }) => s.code));
+      let code = slugify(c.school);
+      for (let n = 2; taken.has(code); n++) code = `${slugify(c.school)}-${n}`;
+
+      const { data: school, error } = await supabase
+        .from("schools")
+        .insert({ name: c.school, code })
+        .select("id")
+        .single();
+      if (error || !school) return fail(`Could not create school "${c.school}": ${error?.message}`);
+      created.push({ table: "schools", id: school.id });
+      schoolId = school.id;
+    }
+
+    // 2. Department (department-scoped courses)
+    let departmentId = c.department_id;
+    if (c.scope === "department" && !departmentId && c.department) {
+      const { data: department, error } = await supabase
+        .from("departments")
+        .insert({ school_id: schoolId, name: c.department, code: coursePrefix(c.course) })
+        .select("id")
+        .single();
+      if (error || !department) return fail(`Could not create department "${c.department}": ${error?.message}`);
+      created.push({ table: "departments", id: department.id });
+      departmentId = department.id;
+    }
+
+    // 3. Course
+    let courseId = c.course_id;
+    if (!courseId) {
+      const { data: course, error } = await supabase
+        .from("courses")
+        .insert({
+          code: c.course,
+          title: c.course_title || c.course,
+          level: c.level,
+          scope: c.scope,
+          department_id: c.scope === "department" ? departmentId : null,
+          school_id: c.scope === "school" ? schoolId : null,
+        })
+        .select("id")
+        .single();
+      if (error || !course) return fail(`Could not create course ${c.course}: ${error?.message}. ${MIGRATION_HINT}`);
+      created.push({ table: "courses", id: course.id });
+      courseId = course.id;
+    }
+
+    const confirmed = { ...c, school_id: schoolId, department_id: departmentId, course_id: courseId };
+
+    // Final filename is generated here from confirmed metadata, never trusted from the client/LLM
+    const finalFilename = formatNormalizedFilename(confirmed, group.original_filenames[0] || "file.pdf");
+    const sessionFolder = (confirmed.session || "undated").replace(/[^a-zA-Z0-9]+/g, "-");
+
+    // 4. Move raw ingestion files to their final Academic Hub location
     for (const [index, from] of sourcePaths.entries()) {
       const name =
         index === 0 ? finalFilename : finalFilename.replace(/(\.[a-z0-9]+)$/i, `-part${index + 1}$1`);
@@ -154,34 +172,29 @@ export async function POST(req: Request) {
 
       if (moveError) {
         console.error(`Failed to move ${from} -> ${to}:`, moveError);
-        for (const moved of movedPaths) {
-          await supabase.storage.from(ACADEMIC_BUCKET).move(moved.to, moved.from);
-        }
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Could not store "${name}" in Academic Hub storage: ${moveError.message}`,
-          },
-          { status: 500 }
-        );
+        return fail(`Could not store "${name}" in Academic Hub storage: ${moveError.message}`);
       }
       movedPaths.push({ from, to });
     }
 
-    const title = `${course.code} — ${materialType.name} (${sessionName})`;
+    // 5. Material record
+    const sessionLabel = [confirmed.session, confirmed.semester].filter(Boolean).join(" ");
+    const title = `${confirmed.course} — ${confirmed.material_type}${sessionLabel ? ` (${sessionLabel})` : ""}`;
     const ext = finalFilename.split(".").pop()?.toLowerCase() || "pdf";
 
     const { data: inserted, error: insertError } = await supabase
       .from("materials")
       .insert({
         title,
-        material_type_id: materialType.id,
-        school_id: school.id,
-        department_id: department.id,
-        course_id: course.id,
-        level: course.level,
-        academic_session_id: semester.academic_session_id,
-        semester_id: semester.id,
+        material_type_id: confirmed.material_type_id,
+        school_id: confirmed.scope === "general" ? null : schoolId || null,
+        department_id: confirmed.scope === "department" ? departmentId : null,
+        course_id: courseId,
+        level: confirmed.level,
+        exam_session: confirmed.session || null,
+        exam_semester: confirmed.semester || null,
+        academic_session_id: null,
+        semester_id: null,
         original_filename: group.original_filenames.join(", "),
         storage_path: movedPaths[0].to,
         file_type: ext,
@@ -195,34 +208,26 @@ export async function POST(req: Request) {
 
     if (insertError || !inserted) {
       console.error("Supabase materials insert error:", insertError);
-      // Keep storage and metadata in sync: put the files back for a retry
-      for (const moved of movedPaths) {
-        await supabase.storage.from(ACADEMIC_BUCKET).move(moved.to, moved.from);
-      }
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Failed to save material record: ${insertError?.message || "unknown error"}`,
-        },
-        { status: 500 }
-      );
+      return fail(`Failed to save material record: ${insertError?.message || "unknown error"}. ${MIGRATION_HINT}`);
     }
 
+    const materialType = context.materialTypes.find((t) => t.id === confirmed.material_type_id);
     const material = {
       ...inserted,
-      material_type_name: materialType.name,
-      material_type_slug: materialType.slug,
-      school_name: school.name,
-      department_name: department.name,
-      course_code: course.code,
-      course_title: course.title,
-      academic_session_name: sessionName,
-      semester_name: semester.name,
+      material_type_name: confirmed.material_type,
+      material_type_slug: materialType?.slug,
+      school_name: confirmed.school || undefined,
+      department_name: confirmed.department || confirmed.school || "General Studies",
+      course_code: confirmed.course,
+      course_title: confirmed.course_title,
+      academic_session_name: confirmed.session,
+      semester_name: confirmed.semester,
     };
 
     return NextResponse.json({
       success: true,
       material,
+      created: creations,
       message: `Successfully published ${title} to Academic Hub.`,
     });
   } catch (err) {

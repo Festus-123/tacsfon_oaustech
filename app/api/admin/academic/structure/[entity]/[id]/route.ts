@@ -1,7 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const ENTITIES = ["schools", "departments", "courses"];
+const ENTITIES = ["schools", "departments", "courses", "course_scope_rules"];
+const SCOPES = ["general", "school", "department"];
+
+async function requireUser() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return { supabase, user };
+}
+
+/** Changes a course's scope (and the owner that scope needs). */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ entity: string; id: string }> }
+) {
+  try {
+    const { entity, id } = await params;
+    if (entity !== "courses") {
+      return NextResponse.json({ error: "Only course scope can be changed here" }, { status: 400 });
+    }
+
+    const { supabase, user } = await requireUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    if (!SCOPES.includes(body.scope)) {
+      return NextResponse.json({ error: "Invalid course scope" }, { status: 400 });
+    }
+    if (body.scope === "school" && !body.school_id) {
+      return NextResponse.json({ error: "Please select the school" }, { status: 400 });
+    }
+    if (body.scope === "department" && !body.department_id) {
+      return NextResponse.json({ error: "Please select the department" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from("courses")
+      .update({
+        scope: body.scope,
+        school_id: body.scope === "school" ? body.school_id : null,
+        department_id: body.scope === "department" ? body.department_id : null,
+      })
+      .eq("id", id)
+      .select("*, departments(name, school_id)")
+      .single();
+
+    if (error || !data) {
+      console.error("Supabase course scope update error:", error);
+      return NextResponse.json({ error: error?.message || "Course not found" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, record: data });
+  } catch (err) {
+    console.error("Error updating course scope:", err);
+    return NextResponse.json({ error: "Server error updating course" }, { status: 500 });
+  }
+}
 
 export async function DELETE(
   request: NextRequest,
@@ -13,11 +72,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unknown structure type" }, { status: 404 });
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
+    const { supabase, user } = await requireUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

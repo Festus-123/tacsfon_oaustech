@@ -1,3 +1,5 @@
+import type { CourseScope } from "@/lib/academic/course-scope";
+
 export interface AcademicSession {
   id: string;
   name: string; // e.g. "2024/2025"
@@ -41,8 +43,11 @@ export interface Department {
 
 export interface Course {
   id: string;
-  department_id: string;
+  // general courses have no department; school-wide courses have only school_id
+  department_id: string | null;
   department_name?: string;
+  scope?: CourseScope;
+  school_id?: string | null;
   code: string; // e.g. "CSC 308"
   title: string;
   level: number; // 100, 200, 300, 400, 500
@@ -65,18 +70,22 @@ export interface AcademicMaterial {
   material_type_id: string;
   material_type_name?: string;
   material_type_slug?: string;
-  school_id: string;
+  school_id: string | null;
   school_name?: string;
-  department_id: string;
+  department_id: string | null;
   department_name?: string;
   course_id: string;
   course_code?: string;
   course_title?: string;
   level: number;
-  academic_session_id: string;
+  // Access-semester links are optional: a subscription opens the whole library
+  academic_session_id: string | null;
   academic_session_name?: string;
-  semester_id: string;
+  semester_id: string | null;
   semester_name?: string;
+  // Session/semester printed on the paper (what students browse by)
+  exam_session?: string | null;
+  exam_semester?: string | null;
   original_filename: string;
   storage_path: string;
   file_type: string;

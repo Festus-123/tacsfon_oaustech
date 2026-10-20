@@ -9,12 +9,13 @@ import {
   getDepartments,
   getCourses,
   getPublishedMaterials,
+  getCourseScopeRules,
 } from "@/lib/supabase/academic";
 
 export const metadata: Metadata = {
   title: "Browse Academic Materials — Past Questions & Manuals | Academic Hub",
   description:
-    "Filter and explore verified past questions, practical manuals, and lecture notes organized by level and department.",
+    "Filter and explore verified past questions, practical manuals, and lecture notes organized by course code, session and semester.",
 };
 
 interface PageProps {
@@ -25,7 +26,7 @@ export default async function AcademicMaterialsPage({ searchParams }: PageProps)
   const resolvedParams = await searchParams;
   const typeParam = typeof resolvedParams.type === "string" ? resolvedParams.type : undefined;
 
-  const [activeSemester, materialTypes, schools, departments, courses, materials] =
+  const [activeSemester, materialTypes, schools, departments, courses, materials, rules] =
     await Promise.all([
       getActiveSemester(),
       getMaterialTypes(),
@@ -33,6 +34,7 @@ export default async function AcademicMaterialsPage({ searchParams }: PageProps)
       getDepartments(),
       getCourses(),
       getPublishedMaterials(),
+      getCourseScopeRules(),
     ]);
 
   return (
@@ -55,6 +57,7 @@ export default async function AcademicMaterialsPage({ searchParams }: PageProps)
           schools={schools}
           departments={departments}
           courses={courses}
+          rules={rules}
           initialTypeSlug={typeParam}
         />
       </main>

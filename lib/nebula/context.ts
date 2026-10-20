@@ -4,20 +4,20 @@ import {
   getSchools,
   getDepartments,
   getCourses,
-  getSemesters,
+  getCourseScopeRules,
 } from "@/lib/supabase/academic";
 
 /**
- * Builds the sorting context (allowed values) from the live Academic Hub configuration,
- * so nothing about schools, departments or courses is hardcoded into the Nebula request.
+ * Builds the sorting context (allowed values, course records and scope rules) from the live
+ * Academic Hub configuration, so nothing about the structure is hardcoded into the Nebula request.
  */
 export async function getNebulaSortingContext(): Promise<NebulaSortingContext> {
-  const [materialTypes, schools, departments, courses, semesters] = await Promise.all([
+  const [materialTypes, schools, departments, courses, rules] = await Promise.all([
     getMaterialTypes(),
     getSchools(),
     getDepartments(),
     getCourses(),
-    getSemesters(),
+    getCourseScopeRules(),
   ]);
 
   return {
@@ -33,17 +33,12 @@ export async function getNebulaSortingContext(): Promise<NebulaSortingContext> {
       id: c.id,
       code: c.code,
       title: c.title,
-      department_id: c.department_id,
       level: c.level,
+      scope: c.scope || "department",
+      department_id: c.department_id,
+      school_id: c.school_id ?? null,
     })),
-    semesters: semesters.map((s) => ({
-      id: s.id,
-      name: s.name,
-      academic_session_name: s.academic_session_name,
-    })),
-    sessions: Array.from(
-      new Set(semesters.map((s) => s.academic_session_name).filter((n): n is string => !!n))
-    ),
+    rules,
     levels: [100, 200, 300, 400, 500],
   };
 }

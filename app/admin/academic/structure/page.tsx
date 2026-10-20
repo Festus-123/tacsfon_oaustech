@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { StructureManager } from "@/components/admin/academic/structure-manager";
-import { getSchools, getDepartments, getCourses } from "@/lib/supabase/academic";
+import { getSchools, getDepartments, getCourses, getCourseScopeRules } from "@/lib/supabase/academic";
 
 export const metadata: Metadata = {
   title: "Manage Academic Structure | TACSFON Admin",
@@ -20,10 +20,11 @@ export default async function AdminStructurePage() {
     redirect("/admin/login");
   }
 
-  const [schools, departments, courses] = await Promise.all([
+  const [schools, departments, courses, rules] = await Promise.all([
     getSchools(),
     getDepartments(),
     getCourses(),
+    getCourseScopeRules(),
   ]);
 
   return (
@@ -35,6 +36,7 @@ export default async function AdminStructurePage() {
           initialSchools={schools}
           initialDepartments={departments}
           initialCourses={courses}
+          initialRules={rules}
         />
       </main>
     </div>

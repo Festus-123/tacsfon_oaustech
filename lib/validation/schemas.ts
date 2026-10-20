@@ -197,19 +197,61 @@ export const departmentSchema = z.object({
 
 export type DepartmentFormData = z.infer<typeof departmentSchema>;
 
-export const courseSchema = z.object({
-  department_id: z.string().uuid("Please select a department"),
-  code: z.string().trim().min(2, "Course code is required (e.g. CSC 308)").max(20),
-  title: z.string().trim().min(2, "Course title is required").max(150),
-  level: z.coerce
-    .number()
-    .refine((val) => [100, 200, 300, 400, 500].includes(val), {
-      message: "Level must be 100, 200, 300, 400, or 500",
-    }),
-  is_active: z.boolean().default(true),
-});
+const LEVELS = [100, 200, 300, 400, 500];
+const SCOPES = ["general", "school", "department"] as const;
+
+export const courseSchema = z
+  .object({
+    code: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z]{3}\s*-?\s*\d{3}$/, "Course code must look like CSC 308"),
+    title: z.string().trim().min(2, "Course title is required").max(150),
+    level: z.coerce
+      .number()
+      .refine((val) => LEVELS.includes(val), {
+        message: "Level must be 100, 200, 300, 400, or 500",
+      }),
+    scope: z.enum(SCOPES).default("department"),
+    department_id: z.string().uuid("Please select a department").nullable().optional(),
+    school_id: z.string().uuid("Please select a school").nullable().optional(),
+    is_active: z.boolean().default(true),
+  })
+  .refine((data) => data.scope !== "department" || !!data.department_id, {
+    message: "Please select the department that owns this course",
+    path: ["department_id"],
+  })
+  .refine((data) => data.scope !== "school" || !!data.school_id, {
+    message: "Please select the school for this school-wide course",
+    path: ["school_id"],
+  });
 
 export type CourseFormData = z.infer<typeof courseSchema>;
+
+export const courseScopeRuleSchema = z
+  .object({
+    match_type: z.enum(["course", "prefix"]),
+    pattern: z.string().trim().min(3, "Enter a course code or a 3-letter prefix").max(10),
+    max_level: z
+      .number()
+      .refine((val) => LEVELS.includes(val), { message: "Max level must be 100-500" })
+      .nullable()
+      .optional(),
+    scope: z.enum(SCOPES),
+    school_id: z.string().uuid().nullable().optional(),
+    department_id: z.string().uuid().nullable().optional(),
+    listed_under_department_ids: z.array(z.string().uuid()).default([]),
+  })
+  .refine((data) => data.scope !== "school" || !!data.school_id, {
+    message: "Please select the school for a school-wide rule",
+    path: ["school_id"],
+  })
+  .refine((data) => data.scope !== "department" || data.match_type === "prefix" || !!data.department_id, {
+    message: "Please select the department for this course",
+    path: ["department_id"],
+  });
+
+export type CourseScopeRuleFormData = z.infer<typeof courseScopeRuleSchema>;
 
 export const materialUploadReviewSchema = z.object({
   title: z.string().trim().min(2, "Material title required").max(200),

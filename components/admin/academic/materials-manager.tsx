@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -29,14 +29,17 @@ import {
   School,
   Department,
   Course,
-  Semester,
 } from "@/data/academic";
 import {
   NebulaDocumentGroup,
   NebulaClassification,
   NebulaSortResult,
+  NebulaSortingContext,
   formatNormalizedFilename,
+  resolveClassification,
+  describePendingCreations,
 } from "@/lib/nebula/client";
+import { CourseScope, CourseScopeRule, COURSE_SCOPE_LABELS } from "@/lib/academic/course-scope";
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface LocalFilePreview {
@@ -52,7 +55,7 @@ interface MaterialsManagerProps {
   schools: School[];
   departments: Department[];
   courses: Course[];
-  semesters: Semester[];
+  rules: CourseScopeRule[];
 }
 
 export function MaterialsManager({
@@ -61,7 +64,7 @@ export function MaterialsManager({
   schools,
   departments,
   courses,
-  semesters,
+  rules,
 }: MaterialsManagerProps) {
   // Security Gate State
   const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
@@ -97,6 +100,34 @@ export function MaterialsManager({
   const [editingGroup, setEditingGroup] = useState<NebulaDocumentGroup | null>(null);
   const [editForm, setEditForm] = useState<Partial<NebulaClassification>>({});
   const [isResubmitting, setIsResubmitting] = useState<boolean>(false);
+
+  // Same resolution the server uses, so the review modal can preview problems and creations
+  const sortingContext: NebulaSortingContext = useMemo(
+    () => ({
+      materialTypes: materialTypes.map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
+      schools: schools.map((sc) => ({ id: sc.id, name: sc.name, code: sc.code })),
+      departments: departments.map((d) => ({ id: d.id, name: d.name, code: d.code, school_id: d.school_id })),
+      courses: courses.map((c) => ({
+        id: c.id,
+        code: c.code,
+        title: c.title,
+        level: c.level,
+        scope: c.scope || "department",
+        department_id: c.department_id,
+        school_id: c.school_id ?? null,
+      })),
+      rules,
+      levels: [100, 200, 300, 400, 500],
+    }),
+    [materialTypes, schools, departments, courses, rules]
+  );
+
+  // Publishing that would create new structure entries waits for this confirmation
+  const [confirmPublish, setConfirmPublish] = useState<{
+    group: NebulaDocumentGroup;
+    creations: string[];
+  } | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Local previews of uploaded files (object URLs from the admin's own device),
   // keyed by storage path, which is also the file ID sent to Nebula.
@@ -454,14 +485,18 @@ export function MaterialsManager({
       school: group.classification.school,
       department: group.classification.department,
       course: group.classification.course,
+      course_title: group.classification.course_title,
+      scope: group.classification.scope,
       session: group.classification.session,
       semester: group.classification.semester,
-      semester_id:
-        group.classification.semester_id ||
-        semesters.find((s) => s.status === "ACTIVE")?.id ||
-        semesters[0]?.id,
     });
   }
+
+  const draft = editingGroup
+    ? resolveClassification({ ...editingGroup.classification, ...editForm }, sortingContext)
+    : null;
+  const draftCreations = draft ? describePendingCreations(draft.classification) : [];
+  const draftIsRegistered = !!draft?.classification.course_id;
 
   // Re-submit Isolated to Nebula with manual updates
   async function handleResubmitToNebula() {
@@ -516,34 +551,33 @@ export function MaterialsManager({
 
   // Manual Approve without calling Nebula
   function handleManualApprove() {
-    if (!editingGroup) return;
+    if (!editingGroup || !draft) return;
 
-    const updatedClassification: NebulaClassification = {
-      ...editingGroup.classification,
-      ...editForm,
-      level: Number(editForm.level) || 100,
-    };
-
-    const newFilename = formatNormalizedFilename(
-      updatedClassification,
-      editingGroup.original_filenames[0]
-    );
+    if (draft.problem) {
+      toast.error(draft.problem);
+      return;
+    }
 
     const approvedGroup: NebulaDocumentGroup = {
       ...editingGroup,
-      classification: updatedClassification,
-      proposed_filename: newFilename,
+      classification: draft.classification,
+      proposed_filename: formatNormalizedFilename(draft.classification, editingGroup.original_filenames[0]),
       status: "approved",
       confidence: 1.0,
       isolation_reason: undefined,
       warnings: ["Approved manually by administrator."],
+      evidence: [...(editingGroup.evidence || []), ...draft.notes],
     };
 
     setIsolatedGroups((prev) => prev.filter((g) => g.group_id !== editingGroup.group_id));
-    setApprovedGroups((prev) => [approvedGroup, ...prev]);
+    setApprovedGroups((prev) => [approvedGroup, ...prev.filter((g) => g.group_id !== editingGroup.group_id)]);
     setEditingGroup(null);
     setReviewTab("approved");
-    toast.success("Document updated and moved to Approved.");
+    toast.success(
+      draftCreations.length > 0
+        ? "Moved to Approved. New structure entries will be created when you publish."
+        : "Document updated and moved to Approved."
+    );
   }
 
   // Reject a group
@@ -573,14 +607,20 @@ export function MaterialsManager({
   }
 
   // Final Publish to Academic Hub
-  async function handlePublishGroup(group: NebulaDocumentGroup) {
+  async function handlePublishGroup(group: NebulaDocumentGroup, confirmCreate = false) {
+    setIsPublishing(true);
     try {
       const res = await fetch("/api/admin/academic/upload/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ group }),
+        body: JSON.stringify({ group, confirm_create: confirmCreate }),
       });
       const data = await res.json();
+
+      if (data.needs_confirmation) {
+        setConfirmPublish({ group, creations: data.creations || [] });
+        return;
+      }
 
       if (!res.ok || !data.success) {
         toast.error(data.error || "Failed to publish material.");
@@ -589,9 +629,16 @@ export function MaterialsManager({
 
       setMaterials((prev) => [data.material, ...prev]);
       setApprovedGroups((prev) => prev.filter((g) => g.group_id !== group.group_id));
-      toast.success(`Published: ${data.material.title}`);
+      setConfirmPublish(null);
+      toast.success(
+        data.created?.length
+          ? `Published: ${data.material.title}. Created ${data.created.join(", ")}.`
+          : `Published: ${data.material.title}`
+      );
     } catch {
       toast.error("Failed to publish material to Academic Hub.");
+    } finally {
+      setIsPublishing(false);
     }
   }
 
@@ -600,6 +647,7 @@ export function MaterialsManager({
     if (approvedGroups.length === 0) return;
 
     let count = 0;
+    let needsConfirmation = 0;
     const publishedIds: string[] = [];
     for (const group of approvedGroups) {
       try {
@@ -613,6 +661,8 @@ export function MaterialsManager({
           setMaterials((prev) => [data.material, ...prev]);
           publishedIds.push(group.group_id);
           count++;
+        } else if (data.needs_confirmation) {
+          needsConfirmation++;
         }
       } catch {
         // Continue loop
@@ -621,7 +671,12 @@ export function MaterialsManager({
 
     // Keep failed groups in the Approved list so they can be fixed and retried
     setApprovedGroups((prev) => prev.filter((g) => !publishedIds.includes(g.group_id)));
-    const failed = approvedGroups.length - count;
+    const failed = approvedGroups.length - count - needsConfirmation;
+    if (needsConfirmation > 0) {
+      toast.info(
+        `${needsConfirmation} item(s) create new courses or departments. Publish them one by one to confirm.`
+      );
+    }
     if (failed > 0) {
       toast.warning(
         `Published ${count} material(s). ${failed} could not be published; open each one to see why.`
@@ -1121,8 +1176,18 @@ export function MaterialsManager({
                               {group.classification.course || "Course N/A"}
                             </span>
                             <span className="text-[11px] text-stone-500">
-                              {group.classification.level}Lvl • {group.classification.department}
+                              {group.classification.level}Lvl •{" "}
+                              {group.classification.scope === "general"
+                                ? "General"
+                                : group.classification.department || group.classification.school}
+                              {group.classification.session &&
+                                ` • ${group.classification.session} ${group.classification.semester}`}
                             </span>
+                            {describePendingCreations(group.classification).length > 0 && (
+                              <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-semibold">
+                                Creates: {describePendingCreations(group.classification).join(", ")}
+                              </span>
+                            )}
                             {group.source_file_ids.length > 1 && (
                               <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 text-[10px] font-semibold">
                                 {group.source_file_ids.length} Pages Grouped
@@ -1325,83 +1390,11 @@ export function MaterialsManager({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="block font-medium text-stone-700 mb-1">
-                      Material Type
-                    </label>
-                    <select
-                      value={editForm.material_type || ""}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, material_type: e.target.value }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
-                    >
-                      {materialTypes.map((t) => (
-                        <option key={t.id} value={t.name}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-stone-700 mb-1">Level</label>
-                    <select
-                      value={editForm.level || 100}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, level: Number(e.target.value) }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
-                    >
-                      <option value={100}>100 Level</option>
-                      <option value={200}>200 Level</option>
-                      <option value={300}>300 Level</option>
-                      <option value={400}>400 Level</option>
-                      <option value={500}>500 Level</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-stone-700 mb-1">School</label>
-                    <select
-                      value={editForm.school || ""}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, school: e.target.value }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
-                    >
-                      {schools.map((s) => (
-                        <option key={s.id} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-stone-700 mb-1">
-                      Department
-                    </label>
-                    <select
-                      value={editForm.department || ""}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, department: e.target.value }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
-                    >
-                      {departments.map((d) => (
-                        <option key={d.id} value={d.name}>
-                          {d.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
                     <label className="block font-medium text-stone-700 mb-1">Course Code</label>
                     <input
                       type="text"
                       list="course-suggestions"
-                      placeholder="e.g. CSC 308 or MTH 101"
+                      placeholder="e.g. CSC 308 or GST 111"
                       value={editForm.course || ""}
                       onChange={(e) =>
                         setEditForm((prev) => ({ ...prev, course: e.target.value.toUpperCase() }))
@@ -1417,47 +1410,167 @@ export function MaterialsManager({
                     </datalist>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block font-medium text-stone-700 mb-1">
-                      Academic Hub Semester
-                    </label>
-                    {semesters.length === 0 ? (
-                      <p className="px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700">
-                        No semester is registered yet.{" "}
-                        <Link href="/admin/academic/semesters" className="underline font-semibold">
-                          Create one under Semesters
-                        </Link>{" "}
-                        before publishing.
+                  <div>
+                    <label className="block font-medium text-stone-700 mb-1">Material Type</label>
+                    <select
+                      value={editForm.material_type || ""}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({ ...prev, material_type: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                    >
+                      <option value="">Select type</option>
+                      {materialTypes.map((t) => (
+                        <option key={t.id} value={t.name}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-stone-700 mb-1">Session (on the paper)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 2023/2024"
+                      value={editForm.session || ""}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, session: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-stone-700 mb-1">Semester (on the paper)</label>
+                    <select
+                      value={editForm.semester || ""}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, semester: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                    >
+                      <option value="">Not printed</option>
+                      <option value="First Semester">First Semester</option>
+                      <option value="Second Semester">Second Semester</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-stone-700 mb-1">Level</label>
+                    <select
+                      value={editForm.level || draft?.classification.level || ""}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({ ...prev, level: Number(e.target.value) }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                    >
+                      <option value="">From course code</option>
+                      {[100, 200, 300, 400, 500].map((lvl) => (
+                        <option key={lvl} value={lvl}>
+                          {lvl} Level
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-stone-700 mb-1">Course Scope</label>
+                    {draftIsRegistered ? (
+                      <p className="px-3 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-700">
+                        {COURSE_SCOPE_LABELS[draft?.classification.scope || "department"]} (registered; change it
+                        under Academic Structure)
                       </p>
                     ) : (
                       <select
-                        value={editForm.semester_id || ""}
-                        onChange={(e) => {
-                          const chosen = semesters.find((s) => s.id === e.target.value);
-                          setEditForm((prev) => ({
-                            ...prev,
-                            semester_id: chosen?.id,
-                            semester: chosen?.name || "",
-                            session: chosen?.academic_session_name || "",
-                          }));
-                        }}
+                        value={editForm.scope || draft?.classification.scope || "department"}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({ ...prev, scope: e.target.value as CourseScope }))
+                        }
                         className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
                       >
-                        {semesters.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} — {s.academic_session_name || "Session"} ({s.status})
+                        {(Object.keys(COURSE_SCOPE_LABELS) as CourseScope[]).map((scope) => (
+                          <option key={scope} value={scope}>
+                            {COURSE_SCOPE_LABELS[scope]}
                           </option>
                         ))}
                       </select>
                     )}
-                    {editingGroup.classification.session && (
-                      <p className="text-[11px] text-stone-500 mt-1">
-                        Printed on document: {editingGroup.classification.session}{" "}
-                        {editingGroup.classification.semester}
+                  </div>
+
+                  {!draftIsRegistered && draft?.classification.scope !== "general" && (
+                    <div>
+                      <label className="block font-medium text-stone-700 mb-1">School</label>
+                      <input
+                        type="text"
+                        list="school-suggestions"
+                        placeholder="Pick or type a new school"
+                        value={editForm.school ?? draft?.classification.school ?? ""}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, school: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                      />
+                      <datalist id="school-suggestions">
+                        {schools.map((sc) => (
+                          <option key={sc.id} value={sc.name} />
+                        ))}
+                      </datalist>
+                    </div>
+                  )}
+
+                  {!draftIsRegistered && draft?.classification.scope === "department" && (
+                    <div>
+                      <label className="block font-medium text-stone-700 mb-1">Department</label>
+                      <input
+                        type="text"
+                        list="department-suggestions"
+                        placeholder="Pick or type a new department"
+                        value={editForm.department ?? draft?.classification.department ?? ""}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, department: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                      />
+                      <datalist id="department-suggestions">
+                        {departments.map((d) => (
+                          <option key={d.id} value={d.name}>
+                            {d.school_name}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  )}
+
+                  {!draftIsRegistered && (
+                    <div className="sm:col-span-2">
+                      <label className="block font-medium text-stone-700 mb-1">Course Title (new course)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Data Management I (optional)"
+                        value={editForm.course_title || ""}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, course_title: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {draft && (
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-xs space-y-1.5">
+                    {draft.problem ? (
+                      <p className="text-red-700 font-medium flex items-start gap-1.5">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        {draft.problem}
+                      </p>
+                    ) : (
+                      <p className="text-emerald-700 font-medium flex items-center gap-1.5">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        Ready to approve
                       </p>
                     )}
+                    {draftCreations.length > 0 && (
+                      <p className="text-amber-800">
+                        Publishing will create: <strong>{draftCreations.join(", ")}</strong>
+                      </p>
+                    )}
+                    <p className="font-mono text-stone-600 break-all">
+                      {formatNormalizedFilename(draft.classification, editingGroup.original_filenames[0] || "file.pdf")}
+                    </p>
                   </div>
-                </div>
+                )}
 
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2 border-t border-stone-100">
                   <button
@@ -1582,6 +1695,48 @@ export function MaterialsManager({
           </table>
         </div>
       </section>
+
+      {/* CONFIRM NEW STRUCTURE ENTRIES BEFORE PUBLISHING */}
+      {confirmPublish && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-stone-200 space-y-4">
+            <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Create new entries?
+            </h3>
+            <p className="text-xs text-stone-600">
+              Publishing <span className="font-mono font-semibold">{confirmPublish.group.classification.course}</span>{" "}
+              will add these to Academic Structure:
+            </p>
+            <ul className="list-disc pl-5 text-xs text-stone-800 space-y-1">
+              {confirmPublish.creations.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p className="text-[11px] text-stone-500">
+              Check the spelling first. You can rename, merge or delete them later under Academic Structure.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmPublish(null)}
+                disabled={isPublishing}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePublishGroup(confirmPublish.group, true)}
+                disabled={isPublishing}
+                className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {isPublishing ? "Publishing..." : "Create & Publish"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

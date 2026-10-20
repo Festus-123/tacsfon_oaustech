@@ -8,7 +8,7 @@ import {
   getSchools,
   getDepartments,
   getCourses,
-  getSemesters,
+  getCourseScopeRules,
   getPublishedMaterials,
 } from "@/lib/supabase/academic";
 
@@ -27,14 +27,14 @@ export default async function AdminMaterialsPage() {
     redirect("/admin/login");
   }
 
-  const [materials, materialTypes, schools, departments, courses, semesters] =
+  const [materials, materialTypes, schools, departments, courses, rules] =
     await Promise.all([
       getPublishedMaterials(),
       getMaterialTypes(),
       getSchools(),
       getDepartments(),
       getCourses(),
-      getSemesters(),
+      getCourseScopeRules(),
     ]);
 
   return (
@@ -48,7 +48,7 @@ export default async function AdminMaterialsPage() {
           schools={schools}
           departments={departments}
           courses={courses}
-          semesters={semesters}
+          rules={rules}
         />
       </main>
     </div>

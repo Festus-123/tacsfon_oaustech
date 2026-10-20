@@ -1,5 +1,6 @@
 import { createClient } from "./server";
 import { createPublicClient } from "./client";
+import type { CourseScopeRule } from "@/lib/academic/course-scope";
 import {
   Semester,
   School,
@@ -173,7 +174,10 @@ export async function getCourses(departmentId?: string, level?: number): Promise
       return filtered;
     }
 
-    let query = supabase.from("courses").select("*, departments(name)").eq("is_active", true);
+    let query = supabase
+      .from("courses")
+      .select("*, departments(name, school_id)")
+      .eq("is_active", true);
     if (departmentId) query = query.eq("department_id", departmentId);
     if (level) query = query.eq("level", level);
 
@@ -185,16 +189,37 @@ export async function getCourses(departmentId?: string, level?: number): Promise
       return filtered;
     }
 
-    type CourseDbRecord = Course & { departments?: { name?: string } };
-    return (data as unknown as CourseDbRecord[]).map((c) => ({
+    type CourseDbRecord = Course & { departments?: { name?: string; school_id?: string } | null };
+    return (data as unknown as CourseDbRecord[]).map(({ departments, ...c }) => ({
       ...c,
-      department_name: c.departments?.name,
+      scope: c.scope || "department",
+      // department-owned courses inherit their department's school
+      school_id: c.school_id || departments?.school_id || null,
+      department_name: departments?.name,
     }));
   } catch {
     let filtered = initialCourses;
     if (departmentId) filtered = filtered.filter((c) => c.department_id === departmentId);
     if (level) filtered = filtered.filter((c) => c.level === level);
     return filtered;
+  }
+}
+
+export async function getCourseScopeRules(): Promise<CourseScopeRule[]> {
+  try {
+    const supabase = createPublicClient();
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from("course_scope_rules")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    // Table only exists once supabase/migration-course-scope.sql has been run
+    if (error || !data) return [];
+    return data as CourseScopeRule[];
+  } catch {
+    return [];
   }
 }
 
@@ -258,11 +283,11 @@ export async function getPublishedMaterials(filters?: {
       material_type_name: d.material_types?.name,
       material_type_slug: d.material_types?.slug,
       school_name: d.schools?.name,
-      department_name: d.departments?.name,
+      department_name: d.departments?.name || d.schools?.name || "General Studies",
       course_code: d.courses?.code,
       course_title: d.courses?.title,
-      academic_session_name: d.academic_sessions?.name,
-      semester_name: d.semesters?.name,
+      academic_session_name: d.exam_session || d.academic_sessions?.name,
+      semester_name: d.exam_semester || d.semesters?.name,
     }));
 
     if (filters?.typeSlug) {
@@ -305,11 +330,11 @@ export async function getMaterialById(id: string): Promise<AcademicMaterial | nu
       material_type_name: data.material_types?.name,
       material_type_slug: data.material_types?.slug,
       school_name: data.schools?.name,
-      department_name: data.departments?.name,
+      department_name: data.departments?.name || data.schools?.name || "General Studies",
       course_code: data.courses?.code,
       course_title: data.courses?.title,
-      academic_session_name: data.academic_sessions?.name,
-      semester_name: data.semesters?.name,
+      academic_session_name: data.exam_session || data.academic_sessions?.name,
+      semester_name: data.exam_semester || data.semesters?.name,
     };
   } catch {
     return initialMaterials.find((m) => m.id === id) || null;
