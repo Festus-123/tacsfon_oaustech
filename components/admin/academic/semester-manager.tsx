@@ -10,10 +10,6 @@ import { Button } from "@/components/ui/button";
 const DEFAULT_START_DATE = "2026-10-12";
 const DEFAULT_END_DATE = "2027-01-11";
 
-function generateSemesterId(): string {
-  return `sem-${Date.now()}`;
-}
-
 interface SemesterManagerProps {
   initialSemesters: Semester[];
   sessions: AcademicSession[];
@@ -23,7 +19,7 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
   const [semesters, setSemesters] = useState<Semester[]>(initialSemesters);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
-    academic_session_id: sessions[0]?.id || "session-2024-2025",
+    session_name: sessions[0]?.name || "",
     name: "First Semester",
     start_date: DEFAULT_START_DATE,
     end_date: DEFAULT_END_DATE,
@@ -32,38 +28,64 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
     description: "",
   });
 
-  const handleCreate = (e: React.FormEvent) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^\d{4}\/\d{4}$/.test(formData.session_name.trim())) {
+      toast.error("Academic session must look like 2025/2026.");
+      return;
+    }
     if (new Date(formData.end_date).getTime() <= new Date(formData.start_date).getTime()) {
       toast.error("End date must be after start date.");
       return;
     }
 
-    const sessionObj = sessions.find((s) => s.id === formData.academic_session_id);
-    const newSem: Semester = {
-      id: generateSemesterId(),
-      academic_session_id: formData.academic_session_id,
-      academic_session_name: sessionObj?.name || "2024/2025",
-      name: formData.name,
-      start_date: formData.start_date,
-      end_date: formData.end_date,
-      price: Number(formData.price),
-      status: formData.status,
-      description: formData.description || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/admin/academic/semesters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, session_name: formData.session_name.trim() }),
+      });
+      const data = await res.json();
 
-    setSemesters((prev) => [newSem, ...prev]);
-    toast.success("Semester configured successfully!");
-    setShowModal(false);
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Failed to save semester.");
+        return;
+      }
+
+      setSemesters((prev) => [data.semester as Semester, ...prev]);
+      toast.success("Semester configured successfully!");
+      setShowModal(false);
+    } catch {
+      toast.error("Network error while saving semester.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleStatusChange = (id: string, newStatus: Semester["status"]) => {
-    setSemesters((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
-    );
-    toast.success(`Semester status set to ${newStatus}`);
+  const handleStatusChange = async (id: string, newStatus: Semester["status"]) => {
+    try {
+      const res = await fetch(`/api/admin/academic/semesters/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Failed to update semester status.");
+        return;
+      }
+
+      setSemesters((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
+      );
+      toast.success(`Semester status set to ${newStatus}`);
+    } catch {
+      toast.error("Network error while updating semester.");
+    }
   };
 
   return (
@@ -161,6 +183,14 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
                   </tr>
                 );
               })}
+              {semesters.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-10 px-4 text-center text-stone-500">
+                    No semesters yet. Click &quot;Add New Semester&quot; to create one; uploads need a
+                    registered semester before they can be published.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -175,17 +205,23 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
             <form onSubmit={handleCreate} className="space-y-4 text-xs">
               <div className="space-y-1">
                 <label className="font-semibold text-stone-700 uppercase">Academic Session</label>
-                <select
-                  value={formData.academic_session_id}
-                  onChange={(e) => setFormData({ ...formData, academic_session_id: e.target.value })}
+                <input
+                  type="text"
+                  list="academic-session-options"
+                  placeholder="e.g. 2025/2026"
+                  required
+                  value={formData.session_name}
+                  onChange={(e) => setFormData({ ...formData, session_name: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-stone-800"
-                >
+                />
+                <datalist id="academic-session-options">
                   {sessions.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
+                    <option key={s.id} value={s.name} />
                   ))}
-                </select>
+                </datalist>
+                <p className="text-[11px] text-stone-500">
+                  Pick an existing session or type a new one; it is created automatically.
+                </p>
               </div>
 
               <div className="space-y-1">
@@ -256,8 +292,8 @@ export function SemesterManager({ initialSemesters, sessions }: SemesterManagerP
                 >
                   Cancel
                 </button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Save Semester
+                <Button type="submit" disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  {isSaving ? "Saving..." : "Save Semester"}
                 </Button>
               </div>
             </form>

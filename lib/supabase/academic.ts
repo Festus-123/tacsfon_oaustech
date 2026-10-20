@@ -9,6 +9,8 @@ import {
   AcademicMaterial,
   DemoMaterial,
   AcademicEntitlement,
+  AcademicSession,
+  initialAcademicSessions,
   initialSemesters,
   initialSchools,
   initialDepartments,
@@ -78,6 +80,23 @@ export async function getSemesters(): Promise<Semester[]> {
     }));
   } catch {
     return initialSemesters;
+  }
+}
+
+export async function getAcademicSessions(): Promise<AcademicSession[]> {
+  try {
+    const supabase = createPublicClient();
+    if (!supabase) return initialAcademicSessions;
+
+    const { data, error } = await supabase
+      .from("academic_sessions")
+      .select("*")
+      .order("name", { ascending: false });
+
+    if (error || !data) return initialAcademicSessions;
+    return data;
+  } catch {
+    return initialAcademicSessions;
   }
 }
 

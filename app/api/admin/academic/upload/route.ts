@@ -1,21 +1,11 @@
 import { NextResponse } from "next/server";
 import { isAcademicHubUnlocked } from "@/lib/security/academic-hub-key";
-import {
-  sendSortingRequestToNebula,
-  RawUploadedFile,
-  NebulaSortingContext,
-} from "@/lib/nebula/client";
-import {
-  getMaterialTypes,
-  getSchools,
-  getDepartments,
-  getCourses,
-  getSemesters,
-} from "@/lib/supabase/academic";
+import { sendSortingRequestToNebula, RawUploadedFile } from "@/lib/nebula/client";
+import { getNebulaSortingContext } from "@/lib/nebula/context";
 import { createClient } from "@/lib/supabase/server";
 
-// Allow time for storage downloads plus the 45s Nebula request
-export const maxDuration = 60;
+// Nebula analyses pages synchronously and can take minutes for larger batches
+export const maxDuration = 300;
 
 const MAX_TOTAL_BYTES = 100 * 1024 * 1024; // 100 MB per sorting request
 const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png", "webp", "docx"];
@@ -176,43 +166,12 @@ export async function POST(req: Request) {
         name: ref.name,
         size: blob.size,
         type: ref.type || blob.type || "application/octet-stream",
-        base64: Buffer.from(bytes).toString("base64"),
+        bytes,
       });
     }
 
     // 5. Gather Dynamic Academic Hub Context
-    const [materialTypes, schools, departments, courses, semesters] = await Promise.all([
-      getMaterialTypes(),
-      getSchools(),
-      getDepartments(),
-      getCourses(),
-      getSemesters(),
-    ]);
-
-    const context: NebulaSortingContext = {
-      materialTypes: materialTypes.map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
-      schools: schools.map((s) => ({ id: s.id, name: s.name, code: s.code })),
-      departments: departments.map((d) => ({
-        id: d.id,
-        name: d.name,
-        code: d.code,
-        school_id: d.school_id,
-      })),
-      courses: courses.map((c) => ({
-        id: c.id,
-        code: c.code,
-        title: c.title,
-        department_id: c.department_id,
-        level: c.level,
-      })),
-      semesters: semesters.map((s) => ({
-        id: s.id,
-        name: s.name,
-        academic_session_name: s.academic_session_name,
-      })),
-      sessions: ["2024/2025", "2025/2026", "2026/2027"],
-      levels: [100, 200, 300, 400, 500],
-    };
+    const context = await getNebulaSortingContext();
 
     // 6. Dispatch to Nebula AI
     const result = await sendSortingRequestToNebula(rawFiles, context, requestId);

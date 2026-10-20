@@ -31,7 +31,12 @@ import {
   Course,
   Semester,
 } from "@/data/academic";
-import { NebulaDocumentGroup, NebulaClassification, formatNormalizedFilename } from "@/lib/nebula/client";
+import {
+  NebulaDocumentGroup,
+  NebulaClassification,
+  NebulaSortResult,
+  formatNormalizedFilename,
+} from "@/lib/nebula/client";
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface LocalFilePreview {
@@ -451,6 +456,10 @@ export function MaterialsManager({
       course: group.classification.course,
       session: group.classification.session,
       semester: group.classification.semester,
+      semester_id:
+        group.classification.semester_id ||
+        semesters.find((s) => s.status === "ACTIVE")?.id ||
+        semesters[0]?.id,
     });
   }
 
@@ -476,14 +485,28 @@ export function MaterialsManager({
         return;
       }
 
-      const updated = data.group;
-      // Remove from isolated, add to approved
-      setIsolatedGroups((prev) => prev.filter((g) => g.group_id !== editingGroup.group_id));
-      setApprovedGroups((prev) => [updated, ...prev]);
+      // Nebula may regroup the pages, so replace the original group with everything it returned
+      const result: NebulaSortResult = data.result;
+      const removeOriginal = (prev: NebulaDocumentGroup[]) =>
+        prev.filter((g) => g.group_id !== editingGroup.group_id);
+      setApprovedGroups((prev) => [...result.approved, ...removeOriginal(prev)]);
+      setIsolatedGroups((prev) => [...result.isolated, ...removeOriginal(prev)]);
+      setRejectedGroups((prev) => [...result.rejected, ...removeOriginal(prev)]);
+
+      if (result.notice) {
+        toast.warning(result.notice, { duration: 10000 });
+      }
 
       setEditingGroup(null);
-      setReviewTab("approved");
-      toast.success("Document re-evaluated and moved to Approved!");
+      if (result.isolated.length > 0) {
+        setReviewTab("isolated");
+        toast.info(
+          `Nebula still needs information for ${result.isolated.length} item(s): ${result.isolated[0].isolation_reason || ""}`
+        );
+      } else {
+        setReviewTab("approved");
+        toast.success("Document re-evaluated and moved to Approved!");
+      }
     } catch {
       toast.error("Network error resubmitting to Nebula.");
     } finally {
@@ -1278,6 +1301,19 @@ export function MaterialsManager({
                   </div>
                 )}
 
+                {editingGroup.evidence && editingGroup.evidence.length > 0 && (
+                  <details className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-xs text-stone-700">
+                    <summary className="cursor-pointer font-semibold">
+                      What Nebula found ({editingGroup.evidence.length})
+                    </summary>
+                    <ul className="list-disc pl-5 mt-2 space-y-0.5 break-words">
+                      {editingGroup.evidence.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+
                 <div className="space-y-1.5">
                   <div className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
                     <Eye className="h-3.5 w-3.5" />
@@ -1381,40 +1417,45 @@ export function MaterialsManager({
                     </datalist>
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="block font-medium text-stone-700 mb-1">
-                      Academic Session
+                      Academic Hub Semester
                     </label>
-                    <select
-                      value={editForm.session || "2024/2025"}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, session: e.target.value }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
-                    >
-                      <option value="2024/2025">2024/2025</option>
-                      <option value="2025/2026">2025/2026</option>
-                      <option value="2026/2027">2026/2027</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-stone-700 mb-1">
-                      Semester
-                    </label>
-                    <select
-                      value={editForm.semester || semesters[0]?.name || "First Semester"}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({ ...prev, semester: e.target.value }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
-                    >
-                      {semesters.map((s) => (
-                        <option key={s.id} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
+                    {semesters.length === 0 ? (
+                      <p className="px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700">
+                        No semester is registered yet.{" "}
+                        <Link href="/admin/academic/semesters" className="underline font-semibold">
+                          Create one under Semesters
+                        </Link>{" "}
+                        before publishing.
+                      </p>
+                    ) : (
+                      <select
+                        value={editForm.semester_id || ""}
+                        onChange={(e) => {
+                          const chosen = semesters.find((s) => s.id === e.target.value);
+                          setEditForm((prev) => ({
+                            ...prev,
+                            semester_id: chosen?.id,
+                            semester: chosen?.name || "",
+                            session: chosen?.academic_session_name || "",
+                          }));
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white"
+                      >
+                        {semesters.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} — {s.academic_session_name || "Session"} ({s.status})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {editingGroup.classification.session && (
+                      <p className="text-[11px] text-stone-500 mt-1">
+                        Printed on document: {editingGroup.classification.session}{" "}
+                        {editingGroup.classification.semester}
+                      </p>
+                    )}
                   </div>
                 </div>
 

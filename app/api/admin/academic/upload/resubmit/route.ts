@@ -2,17 +2,20 @@ import { NextResponse } from "next/server";
 import { isAcademicHubUnlocked } from "@/lib/security/academic-hub-key";
 import {
   reevaluateIsolatedGroup,
+  reprocessGroupWithNebula,
   NebulaDocumentGroup,
   NebulaClassification,
-  NebulaSortingContext,
+  NebulaSortResult,
+  RawUploadedFile,
 } from "@/lib/nebula/client";
-import {
-  getMaterialTypes,
-  getSchools,
-  getDepartments,
-  getCourses,
-  getSemesters,
-} from "@/lib/supabase/academic";
+import { getNebulaSortingContext } from "@/lib/nebula/context";
+import { createClient } from "@/lib/supabase/server";
+
+// Re-analysis by Nebula is synchronous, like the first sorting request
+export const maxDuration = 300;
+
+const ACADEMIC_BUCKET = "academic-materials";
+const INGESTION_PREFIX = "ingestion/";
 
 export async function POST(req: Request) {
   try {
@@ -20,6 +23,18 @@ export async function POST(req: Request) {
     if (!unlocked) {
       return NextResponse.json(
         { success: false, error: "Academic Hub security gate locked" },
+        { status: 401 }
+      );
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Admin session expired. Please log in again." },
         { status: 401 }
       );
     }
@@ -35,45 +50,57 @@ export async function POST(req: Request) {
       );
     }
 
-    const [materialTypes, schools, departments, courses, semesters] = await Promise.all([
-      getMaterialTypes(),
-      getSchools(),
-      getDepartments(),
-      getCourses(),
-      getSemesters(),
-    ]);
+    const context = await getNebulaSortingContext();
 
-    const context: NebulaSortingContext = {
-      materialTypes: materialTypes.map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
-      schools: schools.map((s) => ({ id: s.id, name: s.name, code: s.code })),
-      departments: departments.map((d) => ({
-        id: d.id,
-        name: d.name,
-        code: d.code,
-        school_id: d.school_id,
-      })),
-      courses: courses.map((c) => ({
-        id: c.id,
-        code: c.code,
-        title: c.title,
-        department_id: c.department_id,
-        level: c.level,
-      })),
-      semesters: semesters.map((s) => ({
-        id: s.id,
-        name: s.name,
-        academic_session_name: s.academic_session_name,
-      })),
-      sessions: ["2024/2025", "2025/2026", "2026/2027"],
-      levels: [100, 200, 300, 400, 500],
-    };
+    // Re-send the group's raw files (in their original order) from ingestion storage
+    const files: RawUploadedFile[] = [];
+    for (const [index, path] of group.source_file_ids.entries()) {
+      if (!path.startsWith(INGESTION_PREFIX) || path.includes("..")) continue;
+      const { data: blob, error } = await supabase.storage.from(ACADEMIC_BUCKET).download(path);
+      if (error || !blob) {
+        console.error(`Failed to read ingested file ${path} for reprocessing:`, error);
+        continue;
+      }
+      files.push({
+        id: path,
+        name: group.original_filenames[index] || path.split("/").pop() || "file",
+        size: blob.size,
+        type: blob.type || group.mime_type || "application/octet-stream",
+        bytes: new Uint8Array(await blob.arrayBuffer()),
+      });
+    }
 
-    const updatedGroup = await reevaluateIsolatedGroup(group, corrections, context);
+    let result: NebulaSortResult | null = null;
+    let notice: string | undefined;
+
+    if (files.length === group.source_file_ids.length && files.length > 0) {
+      const outcome = await reprocessGroupWithNebula(files, context, group, corrections);
+      result = outcome.result;
+      notice = outcome.notice;
+    } else {
+      notice = "The original files are no longer in ingestion storage, so Nebula could not re-read them.";
+    }
+
+    if (!result) {
+      // Nebula unavailable: apply the administrator's corrections locally
+      const updated = await reevaluateIsolatedGroup(group, corrections, context);
+      result = {
+        request_id: group.group_id,
+        approved: [updated],
+        isolated: [],
+        rejected: [],
+        source: "fallback",
+        notice: `${notice} Your corrections were applied without Nebula re-reading the document.`,
+      };
+    }
 
     return NextResponse.json({
       success: true,
-      group: updatedGroup,
-      message: "Document re-evaluated with administrator metadata and approved.",
+      result,
+      message:
+        result.source === "nebula"
+          ? "Nebula re-analyzed the document with your information."
+          : "Document updated with administrator metadata.",
     });
   } catch (err) {
     console.error("Resubmit error:", err);

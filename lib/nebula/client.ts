@@ -1,10 +1,9 @@
-
 export interface RawUploadedFile {
   id: string;
   name: string;
   size: number;
   type: string;
-  base64?: string;
+  bytes?: Uint8Array;
 }
 
 export interface NebulaSortingContext {
@@ -44,6 +43,7 @@ export interface NebulaDocumentGroup {
   confidence: number;
   isolation_reason?: string;
   warnings: string[];
+  evidence?: string[];
   created_at: string;
 }
 
@@ -84,6 +84,318 @@ export function formatNormalizedFilename(
   return `${typeSlug}-${lvl}-${schoolSlug}-${deptSlug}-${courseSlug}-${sessionSlug}-${semesterSlug}.${ext}`;
 }
 
+// ============================================================
+// NEBULA /sort-documents INTEGRATION
+// Contract: Nebula project docs/DOCUMENT_SORTING_API.md
+// ============================================================
+
+const SORTING_SCHEMA = ["material_type", "level", "school", "department", "course", "session", "semester"];
+
+// Nebula only has to read the material type and course from the document. Level, department
+// and school are resolved by TACSFON from the course record (deterministic, not LLM-guessed);
+// session and semester are often not printed, so they stay optional.
+const REQUIRED_FIELDS = ["material_type", "course"];
+
+const FIELD_DESCRIPTIONS: Record<string, string> = {
+  material_type:
+    "Past Questions = past examination or test question papers; Manuals / Lecture Notes = lecture notes, practical manuals, study guides; Workbooks = worksheets and exercises; Materials = other reading material, slides, textbooks.",
+  level: "Course level (100-500). Usually the first digit of the course code: CSC 308 is 300 level.",
+  school: "The university school/faculty, only if printed on the document.",
+  department: "The department offering the course, only if printed on the document.",
+  course: "The course code only, e.g. CSC 308 (three letters, a space, three digits).",
+  session: "Academic session printed on the document, e.g. 2023/2024.",
+  semester: "First Semester or Second Semester, if printed on the document.",
+};
+
+// Vercel functions on this route run for up to 300s (route maxDuration); leave headroom
+const NEBULA_TIMEOUT_MS = 280_000;
+
+interface NebulaSourceFile {
+  file_id: string;
+  original_filename: string;
+  page_numbers?: number[];
+}
+
+interface NebulaGroup {
+  group_id: string;
+  status: "classified" | "isolated";
+  source_files: NebulaSourceFile[];
+  classification: Record<string, string | null>;
+  confidence: "high" | "medium" | "low" | "insufficient";
+  reason: string | null;
+  isolation_reasons?: string[];
+  evidence?: string[];
+  warnings?: string[];
+  possible_duplicate_of?: string | null;
+}
+
+interface NebulaResponse {
+  request_id: string;
+  groups: NebulaGroup[];
+  isolated: NebulaGroup[];
+  rejected: { file_id: string; original_filename: string; reason_code: string; reason: string }[];
+  duplicates?: { file_id: string; original_filename: string; duplicate_of_file_id: string; reason: string }[];
+}
+
+const CONFIDENCE_SCORE: Record<NebulaGroup["confidence"], number> = {
+  high: 0.95,
+  medium: 0.75,
+  low: 0.4,
+  insufficient: 0.1,
+};
+
+const normalizeCode = (code: string) => code.replace(/\s+/g, "").toUpperCase();
+const sameText = (a?: string | null, b?: string | null) =>
+  !!a && !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+const unique = (values: string[]) => Array.from(new Set(values.filter(Boolean)));
+
+function buildSortingForm(
+  files: RawUploadedFile[],
+  context: NebulaSortingContext,
+  requestId: string,
+  reprocess?: { corrections: Record<string, string>; previousGroup: NebulaDocumentGroup }
+): FormData {
+  const form = new FormData();
+  form.append("task", "document_sorting");
+  form.append("request_id", requestId);
+  form.append("schema", JSON.stringify(SORTING_SCHEMA));
+  form.append("required_fields", JSON.stringify(REQUIRED_FIELDS));
+  form.append("field_descriptions", JSON.stringify(FIELD_DESCRIPTIONS));
+  form.append(
+    "allowed_values",
+    JSON.stringify({
+      material_type: unique(context.materialTypes.map((t) => t.name)),
+      level: context.levels.map(String),
+      school: unique(context.schools.map((s) => s.name)),
+      department: unique(context.departments.map((d) => d.name)),
+      course: unique(context.courses.map((c) => c.code)),
+      // Unrestricted: the session/semester printed on a paper is rarely a registered access semester
+      session: [],
+      semester: [],
+    })
+  );
+
+  if (reprocess) {
+    form.append(
+      "additional_context",
+      JSON.stringify({ ...reprocess.corrections, source: "administrator" })
+    );
+    form.append("previous_result", JSON.stringify(reprocess.previousGroup));
+  }
+
+  // Files must be sent in page order: Nebula uses the order for continuation/boundary reasoning
+  for (const file of files) {
+    const blob = new Blob([file.bytes ? new Uint8Array(file.bytes) : new Uint8Array()], { type: file.type });
+    form.append("files", blob, file.name);
+  }
+  return form;
+}
+
+async function postToNebula(
+  form: FormData
+): Promise<{ data: NebulaResponse; notice?: undefined } | { data?: undefined; notice: string }> {
+  const nebulaUrl = process.env.NEBULA_API_URL;
+  const nebulaApiKey = process.env.NEBULA_API_KEY;
+
+  if (!nebulaUrl) return { notice: "NEBULA_API_URL is not configured on the server." };
+  if (!nebulaApiKey) return { notice: "NEBULA_API_KEY is not configured on the server." };
+
+  try {
+    const response = await fetch(`${nebulaUrl.replace(/\/+$/, "")}/sort-documents`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${nebulaApiKey}` },
+      body: form,
+      signal: AbortSignal.timeout(NEBULA_TIMEOUT_MS),
+    });
+
+    const body = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const code = body?.error?.code ? ` (${body.error.code})` : "";
+      const message = body?.error?.message ? `: ${body.error.message}` : "";
+      console.warn(`Nebula returned HTTP ${response.status}${code}${message}`);
+      return { notice: `Nebula returned HTTP ${response.status}${code}${message}` };
+    }
+
+    if (!body || !Array.isArray(body.groups) || !Array.isArray(body.isolated)) {
+      return { notice: "Nebula returned a response in an unexpected format." };
+    }
+
+    return { data: body as NebulaResponse };
+  } catch (err) {
+    console.warn("Nebula connection timed out or unreachable:", err);
+    const timedOut = err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+    return {
+      notice: timedOut
+        ? `Nebula did not respond within ${NEBULA_TIMEOUT_MS / 1000} seconds. Try fewer files per upload.`
+        : "Nebula could not be reached from the server.",
+    };
+  }
+}
+
+/**
+ * Resolves Nebula's text values against the live Academic Hub structure.
+ * Department, school and level come from the matched course when Nebula did not read them.
+ * Returns the classification plus a reason when the group cannot be resolved safely.
+ */
+function resolveClassification(
+  raw: Record<string, string | null>,
+  context: NebulaSortingContext
+): { classification: NebulaClassification; problem?: string; notes: string[] } {
+  const notes: string[] = [];
+  const materialType = context.materialTypes.find(
+    (t) => sameText(t.name, raw.material_type) || sameText(t.slug, raw.material_type)
+  );
+
+  const readDepartment = context.departments.find(
+    (d) => sameText(d.name, raw.department) || sameText(d.code, raw.department)
+  );
+  const readSchool = context.schools.find((s) => sameText(s.name, raw.school) || sameText(s.code, raw.school));
+
+  const courseCode = raw.course ? normalizeCode(raw.course) : "";
+  let candidates = courseCode ? context.courses.filter((c) => normalizeCode(c.code) === courseCode) : [];
+  if (readDepartment) {
+    const inDept = candidates.filter((c) => c.department_id === readDepartment.id);
+    if (inDept.length > 0) candidates = inDept;
+  } else if (readSchool && candidates.length > 1) {
+    const deptIdsInSchool = context.departments.filter((d) => d.school_id === readSchool.id).map((d) => d.id);
+    const inSchool = candidates.filter((c) => deptIdsInSchool.includes(c.department_id));
+    if (inSchool.length > 0) candidates = inSchool;
+  }
+
+  // A shared course (e.g. GST 131) may exist under several departments; prefer the one whose
+  // department code matches the course prefix (CSC 308 -> Computer Science / CSC)
+  if (candidates.length > 1) {
+    const prefix = courseCode.replace(/\d+$/, "");
+    const byPrefix = candidates.filter((c) =>
+      context.departments.some((d) => d.id === c.department_id && d.code.toUpperCase() === prefix)
+    );
+    if (byPrefix.length === 1) candidates = byPrefix;
+  }
+
+  const course = candidates.length === 1 ? candidates[0] : undefined;
+  const department =
+    readDepartment || context.departments.find((d) => d.id === course?.department_id);
+  const school = readSchool || context.schools.find((s) => s.id === department?.school_id);
+  const level = Number(raw.level) || course?.level || 0;
+
+  if (course && !readDepartment && department) {
+    notes.push(`department: '${department.name}' taken from the ${course.code} course record`);
+  }
+
+  const semester = context.semesters.find(
+    (s) => sameText(s.name, raw.semester) && (!raw.session || sameText(s.academic_session_name, raw.session))
+  );
+
+  const classification: NebulaClassification = {
+    material_type: materialType?.name || raw.material_type || "",
+    material_type_id: materialType?.id,
+    level,
+    school: school?.name || raw.school || "",
+    school_id: school?.id,
+    department: department?.name || raw.department || "",
+    department_id: department?.id,
+    course: course?.code || raw.course || "",
+    course_id: course?.id,
+    session: raw.session || semester?.academic_session_name || "",
+    semester: raw.semester || "",
+    semester_id: semester?.id,
+  };
+
+  let problem: string | undefined;
+  if (!materialType) {
+    problem = "Material type could not be determined.";
+  } else if (!courseCode) {
+    problem = "Course code could not be determined from the document.";
+  } else if (candidates.length === 0) {
+    problem = `Course ${raw.course} is not registered under Academic Structure (or not under the department on the document).`;
+  } else if (!course) {
+    problem = `${raw.course} is offered by several departments and the document does not say which. Choose the department.`;
+  }
+
+  return { classification, problem, notes };
+}
+
+function mapNebulaResponse(
+  data: NebulaResponse,
+  files: RawUploadedFile[],
+  context: NebulaSortingContext
+): NebulaSortResult {
+  const now = new Date().toISOString();
+
+  // file_001, file_002 ... follow the order the files were sent in
+  const fileFor = (sf: { file_id: string; original_filename: string }) => {
+    const index = Number(sf.file_id.replace(/\D/g, "")) - 1;
+    return files[index] || files.find((f) => f.name === sf.original_filename);
+  };
+
+  const toGroup = (g: NebulaGroup): NebulaDocumentGroup => {
+    const groupFiles = g.source_files.map(fileFor).filter((f): f is RawUploadedFile => !!f);
+    const { classification, problem, notes } = resolveClassification(g.classification || {}, context);
+    const isolated = g.status !== "classified" || !!problem;
+    const types = unique(groupFiles.map((f) => f.type));
+
+    return {
+      group_id: `${data.request_id}:${g.group_id}`,
+      source_file_ids: groupFiles.map((f) => f.id),
+      original_filenames: groupFiles.map((f) => f.name),
+      file_size: groupFiles.reduce((acc, f) => acc + f.size, 0),
+      mime_type: types.length === 1 ? types[0] : "application/pdf",
+      classification,
+      proposed_filename: formatNormalizedFilename(classification, groupFiles[0]?.name || "file.pdf"),
+      status: isolated ? "isolated" : "approved",
+      confidence: CONFIDENCE_SCORE[g.confidence] ?? 0.5,
+      isolation_reason: isolated ? g.reason || problem || "Nebula could not classify this document." : undefined,
+      warnings: [
+        ...(g.warnings || []),
+        ...(g.possible_duplicate_of ? [`Possibly the same document as ${g.possible_duplicate_of}`] : []),
+        ...(g.status === "classified" && problem ? [problem] : []),
+      ],
+      evidence: [...(g.evidence || []), ...notes],
+      created_at: now,
+    };
+  };
+
+  const mapped = [...data.groups, ...data.isolated].map(toGroup);
+
+  const rejected: NebulaDocumentGroup[] = [
+    ...data.rejected.map((r) => ({ ...r, why: r.reason })),
+    ...(data.duplicates || []).map((d) => ({ ...d, why: d.reason })),
+  ].map((r) => {
+    const file = fileFor(r);
+    return {
+      group_id: `${data.request_id}:${r.file_id}`,
+      source_file_ids: file ? [file.id] : [],
+      original_filenames: [r.original_filename],
+      file_size: file?.size || 0,
+      mime_type: file?.type || "application/octet-stream",
+      classification: {
+        material_type: "",
+        level: 0,
+        school: "",
+        department: "",
+        course: "",
+        session: "",
+        semester: "",
+      },
+      proposed_filename: r.original_filename,
+      status: "rejected" as const,
+      confidence: 0,
+      isolation_reason: r.why,
+      warnings: [],
+      created_at: now,
+    };
+  });
+
+  return {
+    request_id: data.request_id,
+    approved: mapped.filter((g) => g.status === "approved"),
+    isolated: mapped.filter((g) => g.status === "isolated"),
+    rejected,
+    source: "nebula",
+  };
+}
+
 /**
  * Sends a sorting request to Nebula AI backend or runs intelligent local classification fallback.
  */
@@ -92,82 +404,57 @@ export async function sendSortingRequestToNebula(
   context: NebulaSortingContext,
   requestId: string = `req-${Date.now()}`
 ): Promise<NebulaSortResult> {
-  const nebulaUrl = process.env.NEBULA_API_URL;
-  const nebulaApiKey = process.env.NEBULA_API_KEY;
-
-  let notice = "NEBULA_API_URL is not configured on the server.";
-
-  if (nebulaUrl) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
-
-      const response = await fetch(`${nebulaUrl.replace(/\/+$/, "")}/sort`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(nebulaApiKey ? { Authorization: `Bearer ${nebulaApiKey}` } : {}),
-        },
-        body: JSON.stringify({
-          task: "document_sorting",
-          request_id: requestId,
-          schema: [
-            "material_type",
-            "level",
-            "school",
-            "department",
-            "course",
-            "session",
-            "semester",
-          ],
-          allowed_values: {
-            material_types: context.materialTypes.map((t) => t.name),
-            levels: context.levels,
-            schools: context.schools.map((s) => s.name),
-            departments: context.departments.map((d) => d.name),
-            courses: context.courses.map((c) => c.code),
-            sessions: context.sessions,
-            semesters: context.semesters.map((s) => s.name),
-          },
-          files: files.map((f) => ({
-            id: f.id,
-            name: f.name,
-            size: f.size,
-            type: f.type,
-            base64: f.base64,
-          })),
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeout);
-
-      if (response.ok) {
-        const nebulaData = await response.json();
-        if (nebulaData && (nebulaData.approved || nebulaData.isolated)) {
-          return { ...(nebulaData as NebulaSortResult), source: "nebula" };
-        }
-        notice = "Nebula returned a response in an unexpected format.";
-        console.warn("Malformed Nebula response. Using smart fallback classifier.");
-      } else {
-        notice = `Nebula returned HTTP ${response.status}.`;
-        console.warn(`Nebula server returned HTTP ${response.status}. Using smart fallback classifier.`);
-      }
-    } catch (err) {
-      notice =
-        err instanceof Error && err.name === "AbortError"
-          ? "Nebula did not respond within 45 seconds."
-          : "Nebula could not be reached from the server.";
-      console.warn("Nebula connection timed out or unreachable. Using smart fallback classifier:", err);
-    }
+  const outcome = await postToNebula(buildSortingForm(files, context, requestId));
+  if (outcome.data) {
+    return mapNebulaResponse(outcome.data, files, context);
   }
 
   // Smart fallback document analyzer
   return {
     ...runSmartFallbackClassifier(files, context, requestId),
     source: "fallback",
-    notice: `${notice} Results below come from the local filename-based fallback classifier, not Nebula.`,
+    notice: `${outcome.notice} Results below come from the local filename-based fallback classifier, not Nebula.`,
   };
+}
+
+/**
+ * Re-sends an isolated group's raw files to Nebula with administrator-supplied values
+ * (Nebula contract §6). Returns null with a notice when Nebula cannot be used.
+ */
+export async function reprocessGroupWithNebula(
+  files: RawUploadedFile[],
+  context: NebulaSortingContext,
+  group: NebulaDocumentGroup,
+  corrections: Partial<NebulaClassification>
+): Promise<{ result: NebulaSortResult | null; notice?: string }> {
+  // Only schema fields with values Nebula will accept (restricted fields must be allowed values)
+  const allowed: Record<string, string[]> = {
+    material_type: context.materialTypes.map((t) => t.name),
+    level: context.levels.map(String),
+    school: context.schools.map((s) => s.name),
+    department: context.departments.map((d) => d.name),
+    course: context.courses.map((c) => c.code),
+  };
+  const supplied: Record<string, string> = {};
+  for (const field of SORTING_SCHEMA) {
+    const value = corrections[field as keyof NebulaClassification];
+    if (value === undefined || value === null || String(value).trim() === "") continue;
+    const text = String(value).trim();
+    const options = allowed[field];
+    if (options) {
+      const match = options.find((o) => sameText(o, text) || (field === "course" && normalizeCode(o) === normalizeCode(text)));
+      if (match) supplied[field] = match;
+    } else {
+      supplied[field] = text;
+    }
+  }
+
+  const requestId = `reprocess-${Date.now()}`;
+  const outcome = await postToNebula(
+    buildSortingForm(files, context, requestId, { corrections: supplied, previousGroup: group })
+  );
+  if (!outcome.data) return { result: null, notice: outcome.notice };
+  return { result: mapNebulaResponse(outcome.data, files, context) };
 }
 
 /**

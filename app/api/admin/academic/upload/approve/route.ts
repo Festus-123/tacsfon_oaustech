@@ -80,11 +80,24 @@ export async function POST(req: Request) {
           sameText(co.code.replace(/\s+/g, ""), c.course?.replace(/\s+/g, "")) &&
           (!department || co.department_id === department.id)
       );
+    // Materials belong to a registered Academic Hub (access) semester. The session/semester printed
+    // on a paper is often not one, so fall back to the current ACTIVE semester.
     const semester =
       semesters.find((s) => s.id === c.semester_id) ||
       semesters.find(
         (s) => sameText(s.name, c.semester) && (!c.session || sameText(s.academic_session_name, c.session))
+      ) ||
+      semesters.find((s) => s.status === "ACTIVE");
+
+    if (semesters.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No Academic Hub semester is registered. Create one under Semesters before publishing.",
+        },
+        { status: 400 }
       );
+    }
 
     const missing = [
       !materialType && "material type",

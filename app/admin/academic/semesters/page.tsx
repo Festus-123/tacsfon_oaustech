@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SemesterManager } from "@/components/admin/academic/semester-manager";
-import { getSemesters } from "@/lib/supabase/academic";
-import { initialAcademicSessions } from "@/data/academic";
+import { getSemesters, getAcademicSessions } from "@/lib/supabase/academic";
 
 export const metadata: Metadata = {
   title: "Manage Academic Semesters | TACSFON Admin",
@@ -21,7 +20,7 @@ export default async function AdminSemestersPage() {
     redirect("/admin/login");
   }
 
-  const semesters = await getSemesters();
+  const [semesters, sessions] = await Promise.all([getSemesters(), getAcademicSessions()]);
 
   return (
     <div className="min-h-screen bg-stone-50/50 flex flex-col">
@@ -30,7 +29,7 @@ export default async function AdminSemestersPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SemesterManager
           initialSemesters={semesters}
-          sessions={initialAcademicSessions}
+          sessions={sessions}
         />
       </main>
     </div>
