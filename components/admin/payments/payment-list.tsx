@@ -111,7 +111,7 @@ export function PaymentList({ initialRequests }: PaymentListProps) {
             Programme Payments & Registrations
           </h1>
           <p className="text-forest-700/80 text-sm mt-1">
-            Create 24-hour manual bank transfer payment requests, generate QR codes, and export registered names.
+            Create 24-hour payment requests (confirmed automatically via Squad), generate QR codes, and export registered names.
           </p>
         </div>
 

@@ -88,21 +88,6 @@ export const paymentRequestSchema = z.object({
   amount_per_person: z
     .number({ message: "Amount per person must be a valid number" })
     .min(0, "Amount per person cannot be negative"),
-  bank_name: z
-    .string()
-    .trim()
-    .min(2, "Please provide the bank name")
-    .max(100, "Bank name cannot exceed 100 characters"),
-  account_name: z
-    .string()
-    .trim()
-    .min(2, "Please provide the account name")
-    .max(120, "Account name cannot exceed 120 characters"),
-  account_number: z
-    .string()
-    .trim()
-    .min(5, "Account number must be at least 5 digits")
-    .max(20, "Account number cannot exceed 20 characters"),
   payment_instructions: z
     .string()
     .trim()
@@ -116,6 +101,11 @@ export type PaymentRequestFormData = z.infer<typeof paymentRequestSchema>;
 
 export const paymentSubmissionSchema = z.object({
   payment_request_id: z.string().uuid("Invalid payment request identifier"),
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email address for your payment receipt")
+    .max(150, "Email cannot exceed 150 characters"),
   names: z
     .array(
       z

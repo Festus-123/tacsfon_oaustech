@@ -95,103 +95,6 @@ export async function getPublicRegisteredNames(
   }
 }
 
-export async function submitPaymentRegistration(
-  paymentRequestId: string,
-  rawNames: string[]
-): Promise<{ success: boolean; error?: string; registeredCount?: number }> {
-  // Normalize and trim names
-  const names = rawNames.map((n) => n.trim()).filter((n) => n.length > 0);
-
-  if (names.length === 0) {
-    return { success: false, error: "Please provide at least one valid name" };
-  }
-
-  // Reject duplicates within this submission
-  const lowerNames = names.map((n) => n.toLowerCase());
-  if (new Set(lowerNames).size !== names.length) {
-    return { success: false, error: "Duplicate names within the same submission are not allowed" };
-  }
-
-  const request = await getPublicPaymentRequest(paymentRequestId);
-  if (!request) {
-    return { success: false, error: "Payment request not found" };
-  }
-
-  const authoritativeStatus = computeAuthoritativeStatus(request);
-  if (authoritativeStatus !== "ACTIVE") {
-    return {
-      success: false,
-      error: `This payment request is ${authoritativeStatus.toLowerCase()} and no longer accepts submissions.`,
-    };
-  }
-
-  // Authoritatively calculate total amount
-  const amountPerPerson = Number(request.amount_per_person) || 0;
-  const totalAmount = amountPerPerson * names.length;
-
-  try {
-    const supabase = await createClient();
-
-    // 1. Insert submission
-    const { data: subData, error: subError } = await supabase
-      .from("payment_submissions")
-      .insert({
-        payment_request_id: paymentRequestId,
-        total_people: names.length,
-        amount_per_person_snapshot: amountPerPerson,
-        total_amount: totalAmount,
-      })
-      .select("id")
-      .single();
-
-    if (subError || !subData) {
-      console.warn("Could not insert submission via Supabase, using mock store fallback:", subError);
-      // Add to in-memory fallback for smooth demonstration
-      names.forEach((name, i) => {
-        initialSubmissionPeople.unshift({
-          id: `mock-p-${Date.now()}-${i}`,
-          submission_id: `mock-s-${Date.now()}`,
-          payment_request_id: paymentRequestId,
-          name,
-          created_at: new Date().toISOString(),
-        });
-      });
-      return { success: true, registeredCount: names.length };
-    }
-
-    // 2. Insert people
-    const peopleRows = names.map((name) => ({
-      submission_id: subData.id,
-      payment_request_id: paymentRequestId,
-      name,
-    }));
-
-    const { error: peopleError } = await supabase
-      .from("payment_submission_people")
-      .insert(peopleRows);
-
-    if (peopleError) {
-      console.error("Error inserting submission people:", peopleError);
-      return { success: false, error: "Failed to record participant names" };
-    }
-
-    return { success: true, registeredCount: names.length };
-  } catch (err) {
-    console.error("Error in submitPaymentRegistration:", err);
-    // Fallback in-memory
-    names.forEach((name, i) => {
-      initialSubmissionPeople.unshift({
-        id: `mock-p-${Date.now()}-${i}`,
-        submission_id: `mock-s-${Date.now()}`,
-        payment_request_id: paymentRequestId,
-        name,
-        created_at: new Date().toISOString(),
-      });
-    });
-    return { success: true, registeredCount: names.length };
-  }
-}
-
 export async function getAdminPaymentRequests(): Promise<PaymentRequest[]> {
   try {
     const supabase = await createClient();
@@ -366,9 +269,6 @@ export async function createPaymentRequest(formData: PaymentRequestFormData): Pr
         programme_date: formData.programme_date,
         description: formData.description || null,
         amount_per_person: formData.amount_per_person,
-        bank_name: formData.bank_name,
-        account_name: formData.account_name,
-        account_number: formData.account_number,
         payment_instructions: formData.payment_instructions || null,
         image_url: formData.image_url || null,
         status: "ACTIVE",

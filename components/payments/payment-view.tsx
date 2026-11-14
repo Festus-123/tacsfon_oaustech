@@ -4,7 +4,6 @@ import { useState, useEffect, useTransition } from "react";
 import Image from "next/image";
 import {
   Check,
-  Copy,
   Clock,
   AlertCircle,
   Users,
@@ -21,12 +20,11 @@ interface PaymentViewProps {
 }
 
 export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProps) {
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [numPeople, setNumPeople] = useState<number>(1);
   const [names, setNames] = useState<string[]>([""]);
-  const [registeredNames, setRegisteredNames] = useState<string[]>(initialRegisteredNames);
+  const registeredNames = initialRegisteredNames;
   const [isPending, startTransition] = useTransition();
-  const [submittedSuccess, setSubmittedSuccess] = useState(false);
+  const [email, setEmail] = useState("");
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState<boolean>(payment.status !== "ACTIVE");
 
@@ -80,13 +78,6 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
     });
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(label);
-    toast.success(`${label} copied to clipboard!`);
-    setTimeout(() => setCopiedField(null), 2500);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -98,7 +89,7 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
     // Validate names
     const trimmed = names.map((n) => n.trim()).filter((n) => n.length > 0);
     if (trimmed.length !== numPeople) {
-      toast.error(`Please provide full names for all ${numPeople} participants.`);
+      toast.error(`Please provide full names for all ${numPeople} passengers.`);
       return;
     }
 
@@ -111,21 +102,29 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
 
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/pay/${payment.id}/submit`, {
+        const res = await fetch("/api/payments/squad/initiate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ names: trimmed }),
+          body: JSON.stringify({
+            payment_request_id: payment.id,
+            names: trimmed,
+            email: email.trim(),
+          }),
         });
 
         const data = await res.json();
-        if (!res.ok) {
-          toast.error(data.error || "Submission failed. Please verify payment and try again.");
+        if (!res.ok || !data.checkoutUrl) {
+          toast.error(data.error || "Could not start the payment. Please try again.");
           return;
         }
 
-        toast.success("Registration confirmed! Your name is now on the public list.");
-        setSubmittedSuccess(true);
-        setRegisteredNames((prev) => [...trimmed, ...prev]);
+        try {
+          sessionStorage.setItem("tacsfon_squad_ref", data.reference);
+        } catch {
+          /* storage unavailable */
+        }
+        // Squad's secure checkout. Registration is only recorded once the payment is verified.
+        window.location.href = data.checkoutUrl;
       } catch {
         toast.error("Network error. Please check your connection and try again.");
       }
@@ -202,75 +201,26 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
         </div>
       )}
 
-      {/* Active Bank Transfer Details */}
+      {/* Secure payment info */}
       <div className="bg-emerald-950 text-emerald-50 rounded-2xl p-6 md:p-8 shadow-md border border-emerald-900/60 relative overflow-hidden">
         <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-emerald-800/20 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="flex items-center justify-between border-b border-emerald-800/60 pb-4 mb-5">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-amber-400" />
-            <h2 className="font-serif font-semibold text-lg text-white">Manual Bank Transfer Details</h2>
+            <h2 className="font-serif font-semibold text-lg text-white">Secure Bank Transfer Payment</h2>
           </div>
-          <span className="text-xs bg-emerald-900/80 text-amber-300 font-medium px-2.5 py-1 rounded-md border border-amber-500/20">
+          <span className="text-xs bg-emerald-900/80 text-amber-300 font-medium px-2.5 py-1 rounded-md border border-amber-500/20 whitespace-nowrap">
             ₦{payment.amount_per_person.toLocaleString()} / person
           </span>
         </div>
-
-        <div className="grid gap-3 text-sm">
-          {/* Bank Name */}
-          <div className="flex items-center justify-between bg-emerald-900/40 p-3 rounded-xl border border-emerald-800/40">
-            <span className="text-emerald-300/80 text-xs">Bank</span>
-            <div className="flex items-center gap-2 font-medium text-white">
-              <span>{payment.bank_name}</span>
-              <button
-                type="button"
-                onClick={() => copyToClipboard(payment.bank_name, "Bank name")}
-                className="p-1 hover:bg-emerald-800 rounded transition text-emerald-300 hover:text-white"
-                title="Copy bank name"
-              >
-                {copiedField === "Bank name" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Account Number */}
-          <div className="flex items-center justify-between bg-emerald-900/50 p-3.5 rounded-xl border border-amber-400/30">
-            <span className="text-amber-300/90 text-xs font-semibold">Account Number</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-base md:text-lg font-bold text-amber-300 tracking-wider">
-                {payment.account_number}
-              </span>
-              <button
-                type="button"
-                onClick={() => copyToClipboard(payment.account_number, "Account number")}
-                className="p-1.5 bg-amber-400/20 hover:bg-amber-400/30 rounded-lg transition text-amber-300 hover:text-amber-100"
-                title="Copy account number"
-              >
-                {copiedField === "Account number" ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Account Name */}
-          <div className="flex items-center justify-between bg-emerald-900/40 p-3 rounded-xl border border-emerald-800/40">
-            <span className="text-emerald-300/80 text-xs">Account Name</span>
-            <div className="flex items-center gap-2 font-medium text-white text-right text-xs md:text-sm">
-              <span>{payment.account_name}</span>
-              <button
-                type="button"
-                onClick={() => copyToClipboard(payment.account_name, "Account name")}
-                className="p-1 hover:bg-emerald-800 rounded transition text-emerald-300 hover:text-white"
-                title="Copy account name"
-              >
-                {copiedField === "Account name" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
+        <p className="mt-4 text-xs md:text-sm text-emerald-200/90 leading-relaxed">
+          Enter the passenger names below and tap <strong>Pay Now</strong>. You will get a one-time account
+          number to transfer to, and your registration is confirmed automatically as soon as the payment
+          arrives.
+        </p>
         {payment.payment_instructions && (
           <p className="mt-4 text-xs text-emerald-200/90 leading-relaxed bg-emerald-900/30 p-3 rounded-lg border border-emerald-800/40">
-            <strong>Payment Note:</strong> {payment.payment_instructions}
+            <strong>Note:</strong> {payment.payment_instructions}
           </p>
         )}
       </div>
@@ -278,38 +228,15 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
       {/* Registration & Confirmation Form */}
       {!isExpired && (
         <div className="bg-white rounded-2xl border border-stone-200/80 p-6 md:p-8 shadow-sm">
-          {submittedSuccess ? (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto">
-                <Check className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-serif font-bold text-stone-900">Registration Received!</h3>
-              <p className="text-stone-600 text-sm max-w-md mx-auto leading-relaxed">
-                Thank you for completing your transfer. Your registration has been submitted and your name is
-                now recorded on the official delegate list below.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setSubmittedSuccess(false);
-                  setNames([""]);
-                  setNumPeople(1);
-                }}
-                className="mt-2 text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline underline-offset-4"
-              >
-                Register another person
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <h3 className="text-lg font-serif font-bold text-stone-900">Delegate Registration</h3>
                 <p className="text-stone-500 text-xs md:text-sm mt-1">
-                  You can register for yourself or for multiple participants in a single bank transfer.
+                  You can register for yourself or for multiple participants in a single payment.
                 </p>
               </div>
 
-              {/* Number of People Selector */}
+              {/* Number of Passengers Selector */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
                   Number of People
@@ -365,10 +292,26 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
                 ))}
               </div>
 
+              {/* Payer email (receipt + payment provider requirement) */}
+              <div className="space-y-2">
+                <label htmlFor="payer-email" className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                  Your Email
+                </label>
+                <input
+                  id="payer-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-800 transition"
+                />
+              </div>
+
               {/* Calculated Total Amount Card */}
               <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-stone-500 uppercase tracking-wider font-medium">Total Transfer Amount</span>
+                  <span className="text-xs text-stone-500 uppercase tracking-wider font-medium">Total Amount</span>
                   <div className="text-xs text-stone-400 mt-0.5">
                     {numPeople} × ₦{payment.amount_per_person.toLocaleString()}
                   </div>
@@ -378,10 +321,9 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
                 </div>
               </div>
 
-              {/* Notice regarding manual payment */}
               <p className="text-xs text-stone-500 leading-relaxed">
-                By clicking <strong>Payment Completed</strong>, you confirm that you have initiated or completed
-                the manual bank transfer to the account above.
+                You will be taken to our secure payment partner (Squad). Your registration is only confirmed
+                after the payment is verified — no manual confirmation is needed.
               </p>
 
               {/* Submit Button */}
@@ -393,17 +335,16 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
                 {isPending ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Verifying & Recording...</span>
+                    <span>Redirecting to secure payment...</span>
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>Payment Completed</span>
+                    <span>Pay Now · ₦{totalAmount.toLocaleString()}</span>
                   </>
                 )}
               </button>
-            </form>
-          )}
+          </form>
         </div>
       )}
 
@@ -422,7 +363,7 @@ export function PaymentView({ payment, initialRegisteredNames }: PaymentViewProp
         {registeredNames.length === 0 ? (
           <div className="text-center py-8 text-stone-400 text-sm">
             <Users className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            No registrations yet. Be the first to confirm!
+            No confirmed registrations yet.
           </div>
         ) : (
           <ul className="divide-y divide-stone-100 max-h-72 overflow-y-auto pr-1">

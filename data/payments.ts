@@ -1,5 +1,3 @@
-import { donationConfig } from "./donation";
-
 export type PaymentStatus = "ACTIVE" | "CLOSED" | "EXPIRED";
 
 export interface PaymentRequest {
@@ -8,9 +6,9 @@ export interface PaymentRequest {
   programme_date: string;
   description: string | null;
   amount_per_person: number;
-  bank_name: string;
-  account_name: string;
-  account_number: string;
+  bank_name?: string | null;
+  account_name?: string | null;
+  account_number?: string | null;
   payment_instructions: string | null;
   image_url: string | null;
   status: PaymentStatus;
@@ -47,10 +45,7 @@ export const initialPaymentRequests: PaymentRequest[] = [
     programme_date: "2026-10-24",
     description: "Official registration and delegate package for the TACSFON OAUSTECH Annual Believers Conference.",
     amount_per_person: 2500,
-    bank_name: donationConfig.bankName,
-    account_name: donationConfig.accountName,
-    account_number: donationConfig.accountNumber,
-    payment_instructions: "Transfer to the official fellowship account. In the payment narration, include your name. After completing transfer, click 'Payment Completed' below.",
+    payment_instructions: "Your registration is confirmed automatically once your payment is verified.",
     image_url: "/assets/sunday-service.jpg",
     status: "ACTIVE",
     created_at: new Date().toISOString(),
@@ -65,9 +60,6 @@ export const initialPaymentRequests: PaymentRequest[] = [
     programme_date: "2026-11-14",
     description: "Transport logistics and retreat material fee for the 3-day spiritual immersion.",
     amount_per_person: 1500,
-    bank_name: donationConfig.bankName,
-    account_name: donationConfig.accountName,
-    account_number: donationConfig.accountNumber,
     payment_instructions: "Please make payment before retreat departure. Ensure your registered names match your student ID.",
     image_url: "/assets/prayer-meeting.jpg",
     status: "ACTIVE",

@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ArrowLeft, AlertCircle, Info, ShieldCheck } from "lucide-react";
+import { ArrowLeft, AlertCircle, Info } from "lucide-react";
 import Link from "next/link";
 import { paymentRequestSchema, PaymentRequestFormData } from "@/lib/validation/schemas";
-import { donationConfig } from "@/data/donation";
 import { Button } from "@/components/ui/button";
 
 export function PaymentForm() {
@@ -26,11 +25,7 @@ export function PaymentForm() {
       programme_date: new Date().toISOString().split("T")[0],
       description: "",
       amount_per_person: 1000,
-      bank_name: donationConfig.bankName,
-      account_name: donationConfig.accountName,
-      account_number: donationConfig.accountNumber,
-      payment_instructions:
-        "Please include your full name in the bank transfer remark/narration. Click 'Payment Completed' on the public page after transferring.",
+      payment_instructions: "",
       image_url: "",
     },
   });
@@ -78,7 +73,7 @@ export function PaymentForm() {
         <div>
           <h1 className="text-2xl font-serif font-bold text-stone-900">Create Programme Payment Request</h1>
           <p className="text-stone-500 text-xs sm:text-sm mt-1">
-            Configure a manual bank transfer registration link with automatic 24-hour expiration.
+            Configure a registration link with automatic 24-hour expiration. Students pay through Squad and are confirmed automatically.
           </p>
         </div>
 
@@ -152,52 +147,6 @@ export function PaymentForm() {
             </div>
           </div>
 
-          {/* Bank Details Section */}
-          <div className="pt-2 border-t border-stone-100 space-y-4">
-            <h3 className="text-xs font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-forest-800" />
-              Receiving Bank Account Details
-            </h3>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-stone-700">Bank Name *</label>
-              <input
-                type="text"
-                {...register("bank_name")}
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-forest-800"
-              />
-              {errors.bank_name && (
-                <p className="text-xs text-red-600 mt-1">{errors.bank_name.message}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-stone-700">Account Number *</label>
-                <input
-                  type="text"
-                  {...register("account_number")}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-mono text-stone-900 focus:outline-none focus:ring-2 focus:ring-forest-800"
-                />
-                {errors.account_number && (
-                  <p className="text-xs text-red-600 mt-1">{errors.account_number.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-stone-700">Account Name *</label>
-                <input
-                  type="text"
-                  {...register("account_name")}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-forest-800"
-                />
-                {errors.account_name && (
-                  <p className="text-xs text-red-600 mt-1">{errors.account_name.message}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Description & Payment Instructions */}
           <div className="pt-2 border-t border-stone-100 space-y-4">
             <div className="space-y-1.5">
@@ -211,10 +160,10 @@ export function PaymentForm() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-stone-700">Custom Payment Instructions</label>
+              <label className="block text-xs font-medium text-stone-700">Note shown to payers (optional)</label>
               <textarea
                 rows={2}
-                placeholder="Specific guidance for payers regarding narration or verification..."
+                placeholder="Any extra information payers should see before paying..."
                 {...register("payment_instructions")}
                 className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-forest-800"
               />

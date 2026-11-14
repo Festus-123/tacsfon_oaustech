@@ -303,24 +303,14 @@ export function PaymentDetail({ payment, qrDataUrl, participants }: PaymentDetai
           <div className="space-y-4">
             <h3 className="font-serif font-bold text-stone-900 text-base flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-forest-800" />
-              Receiving Bank Details
+              Payment Method
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="bg-stone-50 p-3 rounded-xl border border-stone-100">
-                <span className="text-stone-400 block text-[10px] uppercase">Bank</span>
-                <span className="font-semibold text-stone-800 text-sm mt-0.5 block">{payment.bank_name}</span>
-              </div>
-              <div className="bg-stone-50 p-3 rounded-xl border border-stone-100">
-                <span className="text-stone-400 block text-[10px] uppercase">Account Number</span>
-                <span className="font-mono font-bold text-forest-950 text-sm mt-0.5 block">
-                  {payment.account_number}
-                </span>
-              </div>
-              <div className="bg-stone-50 p-3 rounded-xl border border-stone-100">
-                <span className="text-stone-400 block text-[10px] uppercase">Account Name</span>
-                <span className="font-medium text-stone-800 text-xs mt-0.5 block">{payment.account_name}</span>
-              </div>
+            <div className="text-xs text-stone-600 bg-stone-50 p-3.5 rounded-xl border border-stone-100 leading-relaxed">
+              Payments are collected through <strong className="text-stone-700">Squad</strong> (bank transfer) at{" "}
+              <strong className="text-stone-700">₦{payment.amount_per_person.toLocaleString()}</strong> per passenger.
+              Each registration is confirmed automatically once Squad verifies the payment. Only verified
+              payments appear in the list below.
             </div>
 
             {payment.payment_instructions && (
