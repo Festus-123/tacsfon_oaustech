@@ -48,3 +48,4 @@ render_logs.txt
 # Squad payment notes contain live credentials
 supabase/payment.txt
 payment.txt
+change
