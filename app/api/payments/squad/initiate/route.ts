@@ -67,7 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 5-7. Ask Squad for a bank-transfer checkout.
-    const origin = (process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin).replace(/\/+$/, "");
+    // Return the student to the site they are actually on (never a configured/localhost fallback)
+    const origin = request.nextUrl.origin;
     const squad = await initiateSquadTransaction({
       amountKobo,
       email,

@@ -1,5 +1,10 @@
 import { createClient as createSupabaseClient, SupabaseClient } from "@supabase/supabase-js";
 
+/** Env values pasted into hosting dashboards often carry stray whitespace or wrapping quotes. */
+function cleanEnv(value: string | undefined): string | undefined {
+  return value?.trim().replace(/^["']|["']$/g, "").trim();
+}
+
 /**
  * Server-only Supabase client using the service role key.
  *
@@ -13,8 +18,8 @@ export function createServiceClient(): SupabaseClient | null {
     throw new Error("createServiceClient must only be used on the server");
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const serviceKey = cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
   if (!url || !serviceKey) return null;
 
   return createSupabaseClient(url, serviceKey, {
