@@ -36,9 +36,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "TACSFON OAUSTECH Chapter" }],
   creator: "TACSFON (OAUSTECH)",
-  icons: {
-    icon: "/favicon.ico",
-  },
   openGraph: {
     type: "website",
     locale: "en_NG",
